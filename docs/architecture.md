@@ -5,6 +5,7 @@ The supplier, recipient and network views share one Next.js application. Server 
 ```mermaid
 flowchart TD
   S[Supplier workspace<br/>List and propose] --> API[Next.js route handlers<br/>Zod validation + participant checks]
+  S --> P[Browser-only daily totals planner<br/>Weekday baseline and purchase budget]
   R[Recipient workspace<br/>Accept, receive, report use] --> API
   N[Network view<br/>Recorded transfers and use] --> API
   API --> E[Deterministic rules engine<br/>Eligibility, ranking, net value, pool planning]
@@ -36,10 +37,12 @@ An independent `src/lib/climate-scenario.ts` calculator powers the opening Austr
 ```mermaid
 stateDiagram-v2
   [*] --> Proposed: supplier proposes / reserve quantity
-  Proposed --> Booked: assigned recipient accepts / recheck conditions
+  Proposed --> Proposed: supplier prepares collection brief / revisioned readiness
+  Proposed --> Booked: recipient confirms current brief and time / recheck conditions
   Proposed --> Cancelled: participant cancels / release quantity
   Booked --> Cancelled: participant cancels / release quantity
-  Booked --> Received: recipient records actual accepted weight
+  Booked --> Booked: brief revision clears recipient confirmation
+  Booked --> Received: current brief confirmed / recipient records actual accepted weight
   Received --> Completed: supplier confirms / release unaccepted remainder
   Received --> Disputed: supplier reports mismatch
   Completed --> Completed: recipient replaces use report

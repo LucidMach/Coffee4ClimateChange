@@ -2,7 +2,7 @@
 
 ## Delivered locally
 
-Next.js + TypeScript, Tailwind styling, a shadcn-style Radix/CVA button, Zod validation, deterministic matching, SQLite persistence, two-sided handover/receipt flows, separate use reporting, Recharts dashboard, compatible pool planning and CSV export.
+Next.js + TypeScript, Tailwind styling, a shadcn-style Radix/CVA button, Zod validation, deterministic matching, SQLite persistence, two-sided handover/receipt flows, separate use reporting, Recharts dashboard, compatible pool planning and CSV export. Café adoption tools now include a revisioned shared collection brief, browser-only usage-based purchasing and budget planning, and a downloadable Nile participation record. See [adoption tools](adoption-tools.md).
 
 Core demo materials: spent grounds and surplus roasted beans. Chaff, pulp and husks are visible in the catalogue and material form with source-stage distinctions.
 
@@ -25,7 +25,7 @@ The app is local and has not been deployed to Vercel. Ticket ownership and team 
 
 ## Validation
 
-All 25 Vitest core tests and 8 Playwright browser/API tests pass on the current build. ESLint, TypeScript, formatting and the Next.js production build pass. Checks cover the sourced waste/methane illustration, independent café outreach target, 1–10% slider with half-percent steps and keyboard limits, gas-capture sensitivity and negative outcomes, separation from recorded savings, both material pathways, 30 kg proposed / 27 kg received / 25 kg reported used, saved listings after refresh, concurrent reservations, 390 px mobile navigation, continuous looping and scroll reversal. Tests run with OpenAI credentials disabled against isolated test data.
+All 36 Vitest core tests and 11 Playwright browser/API tests pass on the current build. ESLint, TypeScript, formatting and the Next.js production build pass. Checks cover the sourced waste/methane illustration, independent café outreach target, 1–10% slider with half-percent steps and keyboard limits, gas-capture sensitivity and negative outcomes, separation from recorded savings, both material pathways, 30 kg proposed / 27 kg received / 25 kg reported used, saved listings after refresh, concurrent reservations, 390 px mobile navigation, continuous looping and scroll reversal. The adoption checks cover preparation before booking, stale revisions, reapproval before receipt, freshness at the chosen pickup time, preserved legacy receipts, reuse of pickup contact details, closed-day handling, CSV validation, sales-to-beans conversion, pack rounding, budget overruns, browser-only processing, cleared uploads on close and scoped participation exports. Tests run with OpenAI credentials disabled against isolated test data.
 
 ## Visual redesign
 

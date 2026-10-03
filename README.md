@@ -33,6 +33,7 @@ Click a circle to reveal its working tab. The selector stays visible while brows
 - Explainable AUD economics, including negative net value and missing inputs.
 - Unconfirmed prospects cannot be booked.
 - Atomic reservations prevent double allocation.
+- Shared collection brief: recipient-specific preparation rules, supplier contact/access details, container count, agreed pickup time and downloadable manifest. Café readiness precedes recipient booking; changes require a new recipient confirmation.
 - Recipient acceptance → actual received weight → supplier confirmation or dispute.
 - Partial receipt releases the unaccepted remainder after confirmation.
 - Recipient-reported use is recorded separately and replaces earlier reports without double counting.
@@ -40,6 +41,8 @@ Click a circle to reveal its working tab. The selector stays visible while brows
 - Compatible-pool planning with individual batch IDs and overlapping windows. Suggestions do not reserve material; multi-batch booking is a next step.
 - Mobile navigation, keyboard-accessible native modal panels and a built-in demo guide.
 - Optional OpenAI structured explanation with a clearly labelled rules fallback.
+- Browser-only CSV purchase planner: daily bean usage or drink totals → weekday baseline → business goal, stock and safety buffer → suggested packs and AUD budget comparison. Forecasts are estimates; no automatic orders or realized savings claims.
+- A downloadable Nile participation record from confirmed demo handovers and recipient-reported use. This is a scoped record, not COP31 accreditation or B Corp certification.
 
 The two complete demo pathways are **grounds → sample mushroom grower / compost processor** and **usable beans → sample café**. The other materials remain visible as the wider product vision; their real recipients and processing requirements need validation.
 
@@ -84,4 +87,4 @@ Before a public pilot, implement Supabase Auth and an organization-scoped reposi
 
 No buyer outreach, payment, smart scale connection, ABN check, satellite analysis or live business discovery runs in this version. The original image/workbook/docx are planning references and are not modified by this build.
 
-See [architecture](docs/architecture.md), [demo script](docs/demo-script.md), and [build status](docs/build-status.md).
+See [architecture](docs/architecture.md), [adoption tools](docs/adoption-tools.md), [demo script](docs/demo-script.md), and [build status](docs/build-status.md).
