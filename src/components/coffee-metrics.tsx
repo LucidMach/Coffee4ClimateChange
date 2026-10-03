@@ -99,22 +99,22 @@ export function CoffeeMetrics({ workspace }: { workspace: ReactNode }) {
           <>
             <PotentialMetric
               label="Coffee grounds generated in Australia"
-              value={`~${whole(AUSTRALIA_CLIMATE.annualGroundsTonnes * 1_000)}`}
-              unit="kg / year"
+              value={`~${whole(AUSTRALIA_CLIMATE.annualGroundsTonnes)}`}
+              unit="tonnes / year"
               detail="The size of the problem · RMIT estimate"
               icon={Coffee}
             />
             <PotentialMetric
               label="Grounds kept out of landfill"
-              value={whole(scenario.groundsKg)}
-              unit="kg / year"
+              value={whole(scenario.tonnes)}
+              unit="tonnes / year"
               detail={`Potential at ${percent} diversion · landfill → compost`}
               icon={Recycle}
             />
             <PotentialMetric
               label="Methane potentially avoided"
-              value={`~${whole(scenario.methaneTonnes * 1_000)}`}
-              unit="kg methane"
+              value={`~${decimal(scenario.methaneTonnes)}`}
+              unit="tonnes methane"
               detail="Lifetime estimate · food-waste proxy"
               icon={Wind}
             />
@@ -179,12 +179,12 @@ export function CoffeeMetrics({ workspace }: { workspace: ReactNode }) {
             <section>
               <h3>Australia’s grounds estimate</h3>
               <p>
-                RMIT reported about 75 million kilograms of spent coffee grounds
+                RMIT reported about 75,000 tonnes of spent coffee grounds
                 generated in Australia each year in 2023. {percent} is{" "}
-                {whole(scenario.groundsKg)} kg. This is a selected scenario, not
-                a forecast of uptake or a measured landfill volume. It assumes
-                that amount would otherwise go to landfill and is successfully
-                composted.
+                {whole(scenario.tonnes)} tonnes. This is a selected scenario,
+                not a forecast of uptake or a measured landfill volume. It
+                assumes that amount would otherwise go to landfill and is
+                successfully composted.
               </p>
               <a
                 href={AUSTRALIA_CLIMATE.groundsSource}
@@ -264,9 +264,9 @@ export function CoffeeMetrics({ workspace }: { workspace: ReactNode }) {
               <h3>Your selected scenario</h3>
               <p>
                 <strong>
-                  {decimal(scenario.methaneTonnes * 1_000)} kg methane
+                  {decimal(scenario.methaneTonnes)} tonnes methane
                 </strong>{" "}
-                = {whole(scenario.groundsKg)} × (2.1 ×{" "}
+                = {whole(scenario.tonnes)} tonnes × (2.1 ×{" "}
                 {(1 - capture / 100).toFixed(2)} − 0.021) ÷ 28
               </p>
               <p>

@@ -43,9 +43,9 @@ test("Australian potential is an editable sourced illustration and stays separat
   const outreach = metrics
     .locator(".metric")
     .filter({ hasText: "Café outreach target" });
-  await expect(metrics).toContainText("75,000,000");
-  await expect(methane).toContainText("55,688");
-  await expect(methane).toContainText("kg methane");
+  await expect(metrics).toContainText("75,000");
+  await expect(methane).toContainText("55.7");
+  await expect(methane).toContainText("tonnes methane");
   await expect(methane).toContainText("Lifetime estimate · food-waste proxy");
   await expect(outreach).toContainText("~282");
   await expect(outreach).toContainText("not yet contacted");
@@ -59,12 +59,12 @@ test("Australian potential is an editable sourced illustration and stays separat
   await share.focus();
   await page.keyboard.press("ArrowRight");
   await expect(share).toHaveValue("1.5");
-  await expect(metrics).toContainText("1,125,000");
-  await expect(methane).toContainText("83,531");
+  await expect(metrics).toContainText("1,125");
+  await expect(methane).toContainText("83.5");
   await expect(outreach).toContainText("~422");
   await page.keyboard.press("End");
   await expect(share).toHaveValue("10");
-  await expect(metrics).toContainText("7,500,000");
+  await expect(metrics).toContainText("7,500");
   await expect(outreach).toContainText("~2,815");
   await page.keyboard.press("ArrowRight");
   await expect(share).toHaveValue("10");
@@ -90,7 +90,7 @@ test("Australian potential is an editable sourced illustration and stays separat
   );
   await expect(method).toContainText("two separate goals");
   await page.getByLabel("Landfill gas captured (%)").fill("100");
-  await expect(method).toContainText("-562.5 kg methane");
+  await expect(method).toContainText("-0.6 tonnes methane");
   await expect(method).toContainText("Negative results mean");
   await page.keyboard.press("Escape");
   await expect(method).toBeHidden();

@@ -21,13 +21,13 @@ The **1–10% slider advances in 0.5% steps**. It applies the same percentage to
 For a shared scenario percentage `s` and landfill gas capture `c` percent:
 
 ```text
-Q = 75,000,000 × s / 100                     kilograms of grounds per year
+Q = 75,000 × s / 100                         tonnes of grounds per year
 L = 2.1 × (1 − c / 100)                      illustrative landfill CO₂e factor
-Methane change = Q × (L − 0.021) / 28         lifetime kilograms CH₄
+Methane change = Q × (L − 0.021) / 28         lifetime tonnes CH₄
 Cafe outreach target = round(28,154 × s / 100) businesses, not contacts
 ```
 
-Default `s = 1`, `c = 0`: **750,000 kg of annual grounds**, approximately **55,688 kg methane** in the lifetime comparison, and about **282 café businesses to target**. At `s = 1.5`: 1,125,000 kg grounds, approximately 83,531 kg methane and about 422 businesses. Figures are rounded for readability, not measured precisely. Negative values remain visible and mean increased methane emissions in that comparison.
+Default `s = 1`, `c = 0`: **750 tonnes of annual grounds**, approximately **55.7 tonnes methane** in the lifetime comparison, and about **282 café businesses to target**. At `s = 1.5`: 1,125 tonnes grounds, approximately 83.5 tonnes methane and about 422 businesses. Figures are rounded for readability, not measured precisely. Negative values remain visible and mean increased methane emissions in that comparison.
 
 ## Before claiming project impact
 

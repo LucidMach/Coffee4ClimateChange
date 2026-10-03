@@ -398,7 +398,7 @@ export function CoffeeStory({
               <g
                 className="journey-main-bean"
                 opacity={beanOpacity}
-                transform={`rotate(${-18 + Math.sin(angle) * 12}) scale(1.05)`}
+                transform={`rotate(${-18 + Math.sin(angle) * 12}) scale(0.78)`}
               >
                 <path
                   d="M-9-98C45-106 76-50 66 14S17 109-27 98C-73 87-80 28-60-34S-36-91-9-98Z"
