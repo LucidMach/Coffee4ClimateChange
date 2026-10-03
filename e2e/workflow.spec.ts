@@ -1,4 +1,29 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Locator, type Page } from "@playwright/test";
+
+async function prepareCollection(scope: Page | Locator) {
+  await scope
+    .getByLabel("Pickup contact", { exact: true })
+    .fill("Demo manager 0400 000 000");
+  await scope
+    .getByLabel("Pickup access instructions")
+    .fill("Collect labelled containers at rear entrance.");
+  await scope
+    .getByRole("checkbox", { name: /I have reviewed the batch weight/ })
+    .check();
+  await scope.getByRole("button", { name: "Mark café ready" }).click();
+  await expect(
+    scope.getByText("Recipient review needed", { exact: true }),
+  ).toBeVisible();
+}
+async function acceptCollection(scope: Page | Locator) {
+  await scope
+    .getByRole("checkbox", { name: /I can accept this batch/ })
+    .check();
+  await scope.getByRole("button", { name: "Accept pickup" }).click();
+  await expect(
+    scope.getByText("Both sides confirmed", { exact: true }),
+  ).toBeVisible();
+}
 
 test("Australian potential is an editable sourced illustration and stays separate from recorded savings", async ({
   page,
@@ -105,8 +130,13 @@ test("grounds and beans complete the two-sided workflow with separate use report
   await expect(
     page.getByText("Awaiting recipient", { exact: true }),
   ).toBeVisible();
+  await prepareCollection(page);
   await page.getByRole("button", { name: "Review as recipient" }).click();
-  await page.getByRole("button", { name: "Accept pickup" }).click();
+  await acceptCollection(
+    page
+      .locator(".handover-card")
+      .filter({ hasText: "This morning’s coffee grounds" }),
+  );
   await page.getByLabel("Actual accepted weight (kg)").fill("27");
   await page.getByRole("button", { name: "Record receipt" }).click();
   await page.getByRole("button", { name: "Review as supplier" }).click();
@@ -141,9 +171,16 @@ test("grounds and beans complete the two-sided workflow with separate use report
     .locator(".handover-card")
     .filter({ hasText: "Surplus house-blend beans" });
   await beanTransfer
+    .getByRole("button", { name: "Reuse last pickup contact & access" })
+    .click();
+  await expect(
+    beanTransfer.getByLabel("Pickup contact", { exact: true }),
+  ).toHaveValue("Demo manager 0400 000 000");
+  await prepareCollection(beanTransfer);
+  await beanTransfer
     .getByRole("button", { name: "Review as recipient" })
     .click();
-  await page.getByRole("button", { name: "Accept pickup" }).click();
+  await acceptCollection(beanTransfer);
   await page.getByRole("button", { name: "Record receipt" }).click();
   await page.getByRole("button", { name: "Review as supplier" }).click();
   await page
@@ -194,6 +231,20 @@ test("grounds and beans complete the two-sided workflow with separate use report
   await expect(
     page.locator(".metric").filter({ hasText: "Confirmed transfers" }),
   ).toContainText("33 kg");
+  await page.getByLabel("Demo workspace").selectOption("cafe");
+  await page.getByRole("button", { name: "Overview", exact: true }).click();
+  const participation = page.locator(".participation-card");
+  await expect(participation).toContainText("2 confirmed handovers");
+  await expect(participation).toContainText(
+    "33 kg transferred · 31 kg reported used",
+  );
+  const record = page.waitForEvent("download");
+  await participation
+    .getByRole("button", { name: "Download participation record" })
+    .click();
+  expect((await record).suggestedFilename()).toBe(
+    "nile-demo-participation-record.txt",
+  );
   expect(errors).toEqual([]);
 });
 

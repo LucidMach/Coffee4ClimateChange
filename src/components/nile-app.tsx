@@ -45,6 +45,7 @@ import {
   type Match,
   type Material,
   type Priority,
+  type Recipient,
   type Session,
   type Transfer,
   type TransferAction,
@@ -56,6 +57,11 @@ import { Sheet } from "./sheet";
 import { ListingForm } from "./listing-form";
 import { Bean, CoffeeStory } from "./coffee-story";
 import { CoffeeMetrics } from "./coffee-metrics";
+import { CollectionBrief } from "./collection-brief";
+import { AdoptionPanel } from "./adoption-panel";
+const PurchasePlanner = dynamic(() =>
+  import("./purchase-planner").then((module) => module.PurchasePlanner),
+);
 
 const ImpactChart = dynamic(() => import("./impact-chart"), {
   ssr: false,
@@ -160,6 +166,7 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
   const [error, setError] = useState(""),
     [guide, setGuide] = useState(false),
     [filter, setFilter] = useState("");
+  const [purchasePlanner, setPurchasePlanner] = useState(false);
   const [slideDirection, setSlideDirection] = useState("forward");
   const [workspaceOpened, setWorkspaceOpened] = useState(
     initial.session.role !== "cafe",
@@ -786,6 +793,15 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
                         </div>
                       </article>
                     </div>
+                    {cafe && (
+                      <AdoptionPanel
+                        listings={data.listings}
+                        transfers={data.transfers}
+                        supplierId={data.session.businessId}
+                        onPlan={() => setPurchasePlanner(true)}
+                        onHandovers={() => navigate("handovers")}
+                      />
+                    )}
                     <div className="overview-list">
                       <section className="panel">
                         <div className="section-heading">
@@ -945,6 +961,23 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
                               data.recipients.find(
                                 (r) => r.id === t.recipientId,
                               )!.name
+                            }
+                            recipientData={data.recipients.find(
+                              (r) => r.id === t.recipientId,
+                            )!}
+                            previousCollection={
+                              data.transfers.find(
+                                (previous) =>
+                                  previous.id !== t.id &&
+                                  previous.supplierId === t.supplierId &&
+                                  previous.collection &&
+                                  data.listings.find(
+                                    (l) => l.id === previous.listingId,
+                                  )?.location ===
+                                    data.listings.find(
+                                      (l) => l.id === t.listingId,
+                                    )?.location,
+                              )?.collection
                             }
                             session={data.session}
                             busy={busy === t.id}
@@ -1226,6 +1259,9 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
           </button>
         </footer>
       </main>
+      {purchasePlanner && (
+        <PurchasePlanner onClose={() => setPurchasePlanner(false)} />
+      )}
       {form && (
         <ListingForm
           repeat={form.repeat}
@@ -1376,8 +1412,9 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
               <li>
                 <strong>Switch to the recipient</strong>
                 <p>
-                  Choose the recipient you proposed to. Accept, then record the
-                  actual accepted weight.
+                  First prepare the shared collection brief as the café. Choose
+                  the recipient you proposed to, review handling and pickup
+                  time, accept, then record the actual accepted weight.
                 </p>
               </li>
               <li>
@@ -1396,6 +1433,15 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
                 <p>
                   The same engine applies packaging and labelled date
                   requirements to a café-to-café match.
+                </p>
+              </li>
+              <li>
+                <strong>Prevent the next surplus</strong>
+                <p>
+                  On Overview, open Plan next bean order. Try the fictional
+                  usage sample or upload daily totals, then compare an order
+                  with your stock and budget. Download your participation record
+                  after confirmed handovers.
                 </p>
               </li>
             </ol>
@@ -1641,6 +1687,8 @@ function HandoverCard({
   transfer: t,
   listing,
   recipientName,
+  recipientData,
+  previousCollection,
   session,
   busy,
   onAction,
@@ -1649,6 +1697,8 @@ function HandoverCard({
   transfer: Transfer;
   listing: Listing;
   recipientName: string;
+  recipientData: Recipient;
+  previousCollection?: Transfer["collection"];
   session: Session;
   busy: boolean;
   onAction: (action: TransferAction) => Promise<void>;
@@ -1708,6 +1758,16 @@ function HandoverCard({
           </div>
         ))}
       </div>
+      <CollectionBrief
+        key={`${t.collection?.revision ?? 0}-${Boolean(t.collection?.recipientConfirmedAt)}`}
+        transfer={t}
+        listing={listing}
+        recipient={recipientData}
+        previousCollection={previousCollection}
+        session={session}
+        busy={busy}
+        onAction={onAction}
+      />
       {t.status === "proposed" && (
         <div className="handover-action">
           <p>
@@ -1715,21 +1775,11 @@ function HandoverCard({
               ? "Check the batch and sample terms before accepting."
               : "Waiting for the recipient to review and accept."}
           </p>
-          {recipient ? (
-            <Button
-              disabled={busy}
-              onClick={() => onAction({ action: "accept" })}
-            >
-              Accept pickup
-              <Check size={16} />
+          {!recipient && supplier && (
+            <Button variant="secondary" onClick={onSwitch}>
+              Review as recipient
+              <ArrowRight size={16} />
             </Button>
-          ) : (
-            supplier && (
-              <Button variant="secondary" onClick={onSwitch}>
-                Review as recipient
-                <ArrowRight size={16} />
-              </Button>
-            )
           )}
         </div>
       )}
@@ -1751,6 +1801,7 @@ function HandoverCard({
               <Button
                 disabled={
                   busy ||
+                  !t.collection?.recipientConfirmedAt ||
                   weight === "" ||
                   Number(weight) < 0 ||
                   Number(weight) > t.agreedKg

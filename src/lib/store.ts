@@ -58,7 +58,11 @@ export class NileStore {
       this.db
         .prepare("SELECT data FROM transfers ORDER BY rowid DESC")
         .all() as { data: string }[]
-    ).map((r) => JSON.parse(r.data) as Transfer);
+    ).map((r) => {
+      const t = JSON.parse(r.data) as Transfer;
+      // Legacy receipts remain intact; no readiness is invented for old records.
+      return { ...t, collection: t.collection ?? null };
+    });
   }
   listings(): Listing[] {
     const transfers = this.transfers();
@@ -180,6 +184,7 @@ export class NileStore {
         reportedUseKg: null,
         useNote: "",
         disputeNote: "",
+        collection: null,
       };
       this.db
         .prepare("INSERT INTO transfers(id, listing_id, data) VALUES (?, ?, ?)")
@@ -204,17 +209,50 @@ export class NileStore {
         throw new DomainError(message);
       };
       switch (action.action) {
+        case "prepare_collection": {
+          if (!supplier || !["proposed", "booked"].includes(t.status))
+            fail("The supplier can prepare a proposed or booked collection.");
+          if (action.revision !== (t.collection?.revision ?? 0))
+            fail("The collection brief has changed. Refresh before saving.");
+          t.collection = {
+            revision: action.revision + 1,
+            contact: action.contact,
+            accessNote: action.accessNote,
+            containers: action.containers,
+            supplierReadyAt: new Date().toISOString(),
+            recipientConfirmedAt: null,
+          };
+          break;
+        }
         case "accept": {
-          if (!recipient || t.status !== "proposed")
-            fail("The selected recipient can accept a proposed pickup.");
+          if (!recipient || !["proposed", "booked"].includes(t.status))
+            fail(
+              "The selected recipient can accept a proposed or revised pickup.",
+            );
+          if (!t.collection)
+            fail("The supplier must prepare the collection brief first.");
+          const brief = t.collection!;
+          if (action.revision !== brief.revision)
+            fail(
+              "The collection brief has changed. Review the latest revision.",
+            );
+          if (brief.recipientConfirmedAt)
+            fail("This collection revision is already confirmed.");
           const l = this.listing(t.listingId);
+          if (
+            Date.parse(action.pickupAt) < Date.parse(l.availableAt) ||
+            Date.parse(action.pickupAt) >= Date.parse(l.expiresAt)
+          )
+            fail(
+              "Choose a pickup time inside the listing’s availability window.",
+            );
           const r = RECIPIENTS.find((r) => r.id === t.recipientId)!;
           // Include this reservation in available stock while rechecking freshness at acceptance.
           const m = matchListing(
             { ...l, availableKg: l.availableKg + t.agreedKg },
             [r],
             "balanced",
-            new Date(),
+            new Date(Math.max(Date.now(), Date.parse(action.pickupAt))),
             t.agreedKg,
           )[0];
           if (!m || m.eligibility !== "eligible")
@@ -222,12 +260,18 @@ export class NileStore {
               "Conditions have changed. Cancel and review this batch again.",
             );
           t.status = "booked";
+          t.pickupAt = action.pickupAt;
+          brief.recipientConfirmedAt = new Date().toISOString();
           break;
         }
         case "receive":
           if (!recipient || t.status !== "booked")
             fail(
               "The recipient must accept the pickup before recording receipt.",
+            );
+          if (!t.collection?.recipientConfirmedAt)
+            fail(
+              "Both sides must confirm the current collection brief before receipt.",
             );
           if (Date.now() < Date.parse(t.pickupAt))
             fail("Record receipt once the agreed pickup window begins.");

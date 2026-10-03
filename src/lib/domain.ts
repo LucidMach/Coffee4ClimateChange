@@ -169,6 +169,15 @@ export type Transfer = {
   reportedUseKg: number | null;
   useNote: string;
   disputeNote: string;
+  collection: CollectionBrief | null;
+};
+export type CollectionBrief = {
+  revision: number;
+  contact: string;
+  accessNote: string;
+  containers: number;
+  supplierReadyAt: string;
+  recipientConfirmedAt: string | null;
 };
 export const reserveSchema = z.object({
   listingId: z.string(),
@@ -176,7 +185,18 @@ export const reserveSchema = z.object({
   quantityKg: z.number().positive().max(10000),
 });
 export const actionSchema = z.discriminatedUnion("action", [
-  z.object({ action: z.literal("accept") }),
+  z.object({
+    action: z.literal("prepare_collection"),
+    revision: z.number().int().nonnegative(),
+    contact: z.string().trim().min(3).max(120),
+    accessNote: z.string().trim().min(5).max(300),
+    containers: z.number().int().positive().max(1000),
+  }),
+  z.object({
+    action: z.literal("accept"),
+    revision: z.number().int().positive(),
+    pickupAt: z.iso.datetime(),
+  }),
   z.object({
     action: z.literal("receive"),
     acceptedKg: z.number().nonnegative().max(10000),
