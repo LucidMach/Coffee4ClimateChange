@@ -59,6 +59,13 @@ export function CollectionBrief({
     time >= Date.parse(listing.availableAt) &&
     time < Date.parse(listing.expiresAt);
   const ready = Boolean(t.collection?.recipientConfirmedAt);
+  const readinessLabel = ready
+    ? "Both sides confirmed"
+    : !editable
+      ? "Readiness not recorded"
+      : t.collection
+        ? "Recipient review needed"
+        : "Café preparation needed";
   return (
     <section className="collection-brief" aria-label="Shared collection brief">
       <div className="section-heading">
@@ -69,11 +76,7 @@ export function CollectionBrief({
           </h3>
         </div>
         <span className={`badge ${ready ? "ready" : "pending"}`}>
-          {ready
-            ? "Both sides confirmed"
-            : t.collection
-              ? "Recipient review needed"
-              : "Café preparation needed"}
+          {readinessLabel}
         </span>
       </div>
       <div className="collection-summary">
@@ -213,8 +216,9 @@ export function CollectionBrief({
         </div>
       ) : (
         <p className="muted">
-          The café adds contact and access details before the recipient can
-          book.
+          {editable
+            ? "The café adds contact and access details before the recipient can book."
+            : "No collection readiness was recorded for this transfer."}
         </p>
       )}
       {recipient && editable && !ready && (
