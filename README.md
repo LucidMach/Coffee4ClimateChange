@@ -15,6 +15,16 @@ Open **http://127.0.0.1:3000**. The server binds to the local machine. Three sam
 
 SQLite persists to `.nile/demo.sqlite`. Do not commit that folder or `.env.local`. The Playwright tests use a separate database and do not change the demonstration workspace.
 
+## Reset for testing multiple suppliers
+
+```sh
+npm run demo:reset
+```
+
+This backs up the current SQLite workspace to `.nile/backups/`, clears old listings and handovers, and loads **14 fictional batches from six suppliers, totalling 1,200 kg**. Pickup windows refresh when the command runs. The daily OpenAI request ledger is retained. Refresh the browser afterwards; the dev server can stay running.
+
+Open **My materials → Supplier workspace** to switch between four cafés, a roaster and a regional mill. Each supplier sees its own listings and handovers. Recipient and network views browse the full network. Test grounds, surplus beans, chaff, pulp and husks; the mill is in Queensland so distance and collection arrangements need attention. Sample quantities do not imply recorded diversion, reuse or climate savings. For another local SQLite file, run the command with `NILE_DB_PATH` set to its path. Databases and backups are excluded from GitHub.
+
 ## Explore the redesigned experience
 
 Start with the upper coffee story panel, sized to fit the opening screen. A coffee bean revolves around a thin orbit and continuously becomes a latte, grounds and a bean again in a 16-second loop. The larger animation fills the space above the metrics without a playback bar. Scrolling blends the current phase into grounds and carries them out of the green panel toward the workspace circles. Scroll back to reverse the fall and resume the loop. Reduced motion disables autoplay and scroll-driven motion.

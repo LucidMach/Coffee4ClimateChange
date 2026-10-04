@@ -6,6 +6,8 @@ Next.js + TypeScript, Tailwind styling, a shadcn-style Radix/CVA button, Zod val
 
 Core demo materials: spent grounds and surplus roasted beans. Chaff, pulp and husks are visible in the catalogue and material form with source-stage distinctions.
 
+An optional `npm run demo:reset` test scenario backs up the current local database, replaces listings and handovers with 14 fictional batches totalling 1,200 kg across six suppliers, and preserves the daily AI request ledger. The supplier selector scopes listings, launch shortcuts and handovers to the selected business. The standard three-batch seed remains the default for fresh checkouts and isolated tests.
+
 OpenAI has replaced Jev and Claude in the implementation. Its server-only structured explanation adapter is implemented, with a visibly labelled deterministic fallback. **No live API key/model is configured or tested.** No OpenAI credit has been spent by the tests.
 
 ## Evidence states
@@ -25,7 +27,7 @@ The app is local and has not been deployed to Vercel. Ticket ownership and team 
 
 ## Validation
 
-All 36 Vitest core tests and 11 Playwright browser/API tests pass on the current build. ESLint, TypeScript, formatting and the Next.js production build pass. Checks cover the sourced waste/methane illustration, independent café outreach target, 1–10% slider with half-percent steps and keyboard limits, gas-capture sensitivity and negative outcomes, separation from recorded savings, both material pathways, 30 kg proposed / 27 kg received / 25 kg reported used, saved listings after refresh, concurrent reservations, 390 px mobile navigation, continuous looping and scroll reversal. The adoption checks cover preparation before booking, stale revisions, reapproval before receipt, freshness at the chosen pickup time, preserved legacy receipts, reuse of pickup contact details, closed-day handling, CSV validation, sales-to-beans conversion, pack rounding, budget overruns, browser-only processing, cleared uploads on close and scoped participation exports. Tests run with OpenAI credentials disabled against isolated test data.
+All 39 Vitest core tests and 11 Playwright browser/API tests pass on the current build. ESLint, TypeScript, formatting and the Next.js production build pass. Checks cover the sourced waste/methane illustration, independent café outreach target, 1–10% slider with half-percent steps and keyboard limits, gas-capture sensitivity and negative outcomes, separation from recorded savings, both material pathways, 30 kg proposed / 27 kg received / 25 kg reported used, saved listings after refresh, concurrent reservations, 390 px mobile navigation, continuous looping and scroll reversal. The adoption checks cover preparation before booking, stale revisions, reapproval before receipt, freshness at the chosen pickup time, preserved legacy receipts, reuse of pickup contact details, closed-day handling, CSV validation, sales-to-beans conversion, pack rounding, budget overruns, browser-only processing, cleared uploads on close and scoped participation exports. Tests run with OpenAI credentials disabled against isolated test data.
 
 ## Visual redesign
 
