@@ -8,7 +8,7 @@ Core demo materials: spent grounds and surplus roasted beans. Chaff, pulp and hu
 
 An optional `npm run demo:reset` test scenario backs up the current local database, replaces listings and handovers with 14 fictional batches totalling 1,200 kg across six suppliers, and preserves the daily AI request ledger. The supplier selector scopes listings, launch shortcuts and handovers to the selected business. The standard three-batch seed remains the default for fresh checkouts and isolated tests.
 
-OpenAI has replaced Jev and Claude in the implementation. Its server-only structured explanation adapter now rechecks current match facts, caches identical successful answers, deduplicates concurrent requests and saves supplier-scoped explanations with actual token usage when available. Specific provider errors use sanitized rules fallbacks. Connections and `npm run backend:check` read configuration without a model call; `--live-ai` explicitly requests one. The default model is `gpt-4.1-mini`; **no live API key or model access is configured or tested.** No OpenAI credit has been spent. See [backend setup](backend-setup.md).
+OpenAI has replaced Jev and Claude in the implementation. Its server-only structured explanation adapter now rechecks current match facts, caches identical successful answers, deduplicates concurrent requests and saves supplier-scoped explanations with actual token usage when available. Specific provider errors use sanitized rules fallbacks. Connections and `npm run backend:check` read configuration without a model call; `--live-ai` explicitly requests one. The default model is `gpt-4.1-mini`; **The active checkout has a nonempty local API key; live model access has not been validated in this update.** No model calls or API credit were used to prepare these submission materials. See [backend setup](backend-setup.md).
 
 The Supabase SQL foundation creates six tables with organization access policies and client writes disabled. The migration and access boundaries have been tested in local PGlite. **No Supabase project, hosted login or cloud repository is connected.** SQLite remains the working backend and existing data is preserved.
 
@@ -23,7 +23,7 @@ The Supabase SQL foundation creates six tables with organization access policies
 
 ## Remaining connections
 
-OpenAI key and live model check; Supabase account authentication, repository adapter, transactional reservation/receipt RPCs and scoped photo storage; hosted policy verification; real recipient acceptance and quotes; exact-address routing; business lookup; optional measurement modules; reviewed impact factors; real payments and dispute resolution.
+Validate the configured OpenAI key with a live model check; Supabase account authentication, repository adapter, transactional reservation/receipt RPCs and scoped photo storage; hosted policy verification; real recipient acceptance and quotes; exact-address routing; business lookup; optional measurement modules; reviewed impact factors; real payments and dispute resolution.
 
 The app is local and has not been deployed to Vercel. Ticket ownership and team assignments have not been changed by the build.
 
