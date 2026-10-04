@@ -110,7 +110,7 @@ For an existing compatible Chrome installation, set `NILE_CHROME_PATH` to its ex
 
 ## Cloud launch and next work
 
-This build is **local**, with transparent demo role switching instead of account authentication. It deliberately refuses SQLite cloud operation on Vercel. Supabase has not been connected or provisioned. `supabase/migrations/202610040001_foundation.sql` prepares six tables with scoped read policies and denies direct client writes; tests execute the migration and access rules in local Postgres via PGlite.
+This build is deployed using Vercel, with transparent demo role switching instead of account authentication. `supabase/migrations/202610040001_foundation.sql` prepares six tables with scoped read policies and denies direct client writes; tests execute the migration and access rules in local Postgres via PGlite.
 
 Before a public pilot, connect Supabase Auth and an organization-scoped repository, implement transaction-safe reservation/receipt RPCs, signed photo storage and shared AI request limits, then verify the prepared policies against hosted authenticated accounts. Then add real recipient acceptance and quotes, exact pickup addresses, road routing and sourced impact scenarios. Preserve the current engine and receipt invariants when replacing SQLite.
 
