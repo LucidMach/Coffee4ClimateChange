@@ -409,13 +409,17 @@ export class NileStore {
 }
 const globalStore = globalThis as unknown as { nileStore?: NileStore };
 export function getStore() {
-  if (process.env.VERCEL || process.env.NILE_STORAGE === "supabase")
+  if (process.env.NILE_STORAGE === "supabase")
     throw new DomainError(
-      "Cloud storage and authentication must be configured before deployment. This build runs locally with SQLite.",
+      "Cloud storage and authentication must be configured before deployment. This build runs with SQLite.",
       503,
     );
+  const defaultPath = process.env.VERCEL
+    ? "/tmp/demo.sqlite"
+    : resolve(process.cwd(), ".nile/demo.sqlite");
   globalStore.nileStore ??= new NileStore(
-    process.env.NILE_DB_PATH || resolve(process.cwd(), ".nile/demo.sqlite"),
+    process.env.NILE_DB_PATH || defaultPath,
   );
   return globalStore.nileStore;
 }
+
