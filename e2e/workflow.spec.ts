@@ -96,8 +96,8 @@ test("Australian potential is an editable sourced illustration and stays separat
   await expect(method).toBeHidden();
   await page.getByRole("button", { name: "Workspace results" }).click();
   await expect(
-    metrics.locator(".metric").filter({ hasText: "CO₂e avoided" }),
-  ).toContainText("Not known");
+    metrics.locator(".metric").filter({ hasText: "Estimated methane avoided" }),
+  ).toContainText("Not estimated yet");
   await expect(
     metrics.locator(".metric").filter({ hasText: "Waste reported reused" }),
   ).toContainText("0 kg");
@@ -207,8 +207,10 @@ test("grounds and beans complete the two-sided workflow with separate use report
     openingMetrics.locator(".metric").filter({ hasText: "Beans kept in use" }),
   ).toContainText("6 kg");
   await expect(
-    openingMetrics.locator(".metric").filter({ hasText: "CO₂e avoided" }),
-  ).toContainText("Not known");
+    openingMetrics
+      .locator(".metric")
+      .filter({ hasText: "Estimated methane avoided" }),
+  ).toContainText("Not estimated yet");
   await expect(
     page
       .locator(".metrics-grid .metric")
@@ -225,8 +227,10 @@ test("grounds and beans complete the two-sided workflow with separate use report
       .filter({ hasText: "Beans kept in use" }),
   ).toContainText("6 kg");
   await expect(
-    page.locator(".metric").filter({ hasText: "Climate benefit" }),
-  ).toContainText("Not known");
+    page
+      .locator(".metrics-grid .metric")
+      .filter({ hasText: "Estimated methane avoided" }),
+  ).toContainText("Not estimated yet");
   await page.reload();
   await expect(
     page.locator(".metric").filter({ hasText: "Confirmed transfers" }),
@@ -332,7 +336,7 @@ test("mobile navigation and modal remain usable without horizontal overflow", as
   });
   const emissions = metrics
     .locator(".metric")
-    .filter({ hasText: "CO₂e avoided" });
+    .filter({ hasText: "Estimated methane avoided" });
   await emissions.scrollIntoViewIfNeeded();
   const rowBox = await metrics.boundingBox();
   const emissionsBox = await emissions.boundingBox();
@@ -340,7 +344,7 @@ test("mobile navigation and modal remain usable without horizontal overflow", as
   expect(emissionsBox!.x + emissionsBox!.width).toBeLessThanOrEqual(
     rowBox!.x + rowBox!.width + 1,
   );
-  await expect(emissions).toContainText("Not known");
+  await expect(emissions).toContainText("Not estimated yet");
   await expect(
     page.getByRole("button", { name: "My materials", exact: true }),
   ).toBeVisible();

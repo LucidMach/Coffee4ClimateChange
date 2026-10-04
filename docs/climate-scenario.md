@@ -1,6 +1,6 @@
 # Australia waste, methane and outreach illustration
 
-The opening **Australia** view explores possible scale, independently of **Our records**. Its figures are not measured Nile savings, a forecast of uptake, completed outreach or an estimate of all Australian methane emissions. The existing transfer engine continues to report climate benefit as unknown.
+The opening **Australia** view explores possible scale, independently of **Our records**. Its figures are not measured Nile savings, a forecast of uptake, completed outreach or an estimate of all Australian methane emissions. **Our records** now calculates a separate lifetime methane estimate from completed grounds handovers, recipient-reported use and saved assumptions; see [recorded methane estimates](recorded-methane.md).
 
 The opening leads with **Less coffee waste. Less methane.** and links to the [COP31 Presidency's priorities, UNFCCC, 9 June 2026](https://unfccc.int/news/cop31-presidency-announces-new-targets-on-global-electrification-cutting-waste-resilient-cities): halving global waste **growth** by 2035, zero waste and methane reduction, and circular material use. Matching usable beans and by-products with accepting recipients supports those priorities; it does not demonstrate achievement of the global targets.
 
@@ -33,4 +33,4 @@ Default `s = 1`, `c = 0`: **750 tonnes of annual grounds**, approximately **55.7
 
 Validate the coffee-specific factor and moisture basis, actual disposal and gas capture, accepted destination use, collection and treatment energy, transport, source versions and time boundary. Existing organics collection may already avoid landfill. Keep surplus beans, grounds, chaff, pulp and husks distinct. This model is never automatically applied to a listing, receipt or reuse report.
 
-The calculator is in `src/lib/climate-scenario.ts`; the selector, inputs and source panel are in `src/components/coffee-metrics.tsx`.
+The national calculator is in `src/lib/climate-scenario.ts`; the selector, inputs and source panel are in `src/components/coffee-metrics.tsx`. Recorded batch estimates use `src/lib/recorded-methane.ts` and require their own assumptions; the national slider never sets those values.

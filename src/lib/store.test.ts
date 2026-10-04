@@ -2,10 +2,20 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { NileStore } from "./store";
 import { calculateMetrics } from "./engine";
 import { RECIPIENTS } from "./fixtures";
-import type { Session, Transfer } from "./domain";
+import type {
+  MethaneAssumptions,
+  Session,
+  Transfer,
+  TransferAction,
+} from "./domain";
+import {
+  estimateRecordedMethane,
+  summarizeRecordedMethane,
+} from "./recorded-methane";
 let db: NileStore;
 const cafe: Session = { role: "cafe", businessId: "c-demo" },
   mushroom: Session = { role: "recipient", businessId: "r-mushroom" },
+  compost: Session = { role: "recipient", businessId: "r-compost" },
   buyer: Session = { role: "recipient", businessId: "r-cafe" };
 beforeEach(() => {
   db = new NileStore(":memory:");
@@ -213,5 +223,209 @@ describe("shared collection standards", () => {
     expect(
       calculateMetrics(db.listings(), db.transfers(), RECIPIENTS).transferredKg,
     ).toBe(27);
+  });
+});
+
+describe("participant-owned recorded methane assumptions", () => {
+  const assumptions: MethaneAssumptions = {
+    disposal: "landfill",
+    landfillGasCapturePercent: 0,
+    destination: "compost",
+    customDestinationKgCH4PerKg: null,
+    destinationSource: "",
+    wetMassBasis: true,
+  };
+  function completedUse(
+    recipient = compost,
+    material = "l-grounds",
+    quantityKg = 30,
+  ) {
+    const transfer = db.reserve(
+      material,
+      recipient.businessId,
+      quantityKg,
+      cafe,
+    );
+    book(transfer, recipient);
+    db.act(
+      transfer.id,
+      { action: "receive", acceptedKg: quantityKg },
+      recipient,
+    );
+    db.act(transfer.id, { action: "confirm" }, cafe);
+    return db.act(
+      transfer.id,
+      {
+        action: "report_use",
+        quantityKg,
+        note: "Recipient reports using this measured batch.",
+      },
+      recipient,
+    );
+  }
+  const estimateAction = (value = assumptions): TransferAction => ({
+    action: "estimate_methane",
+    assumptions: value,
+  });
+
+  it("saves and replaces assumptions without changing transfer evidence or counting twice", () => {
+    const transfer = completedUse();
+    const saved = db.act(transfer.id, estimateAction(), cafe);
+    expect(saved.methaneAssumptions).toEqual(assumptions);
+    expect(db.transfers()[0].methaneAssumptions).toEqual(assumptions);
+    const replaced = db.act(
+      transfer.id,
+      estimateAction({ ...assumptions, landfillGasCapturePercent: 50 }),
+      compost,
+    );
+    expect({ ...replaced, methaneAssumptions: null }).toEqual({
+      ...transfer,
+      methaneAssumptions: null,
+    });
+    const summary = summarizeRecordedMethane(
+      db.transfers(),
+      db.listings(),
+      RECIPIENTS,
+    );
+    expect(summary.estimatedTransfers).toBe(1);
+    expect(summary.methaneKg).toBeCloseTo(1.1025);
+    db.act(
+      transfer.id,
+      {
+        action: "report_use",
+        quantityKg: 15,
+        note: "Corrected actual used wet weight.",
+      },
+      compost,
+    );
+    expect(
+      summarizeRecordedMethane(db.transfers(), db.listings(), RECIPIENTS)
+        .methaneKg,
+    ).toBeCloseTo(0.55125);
+  });
+  it("rejects unrelated businesses and the network role", () => {
+    const transfer = completedUse();
+    for (const session of [
+      buyer,
+      { role: "cafe", businessId: "c-other" },
+      { role: "network", businessId: cafe.businessId },
+    ] as Session[])
+      expect(() => db.act(transfer.id, estimateAction(), session)).toThrow(
+        "participant",
+      );
+    expect(db.transfers()[0].methaneAssumptions).toBeNull();
+  });
+  it("requires completed receipt and positive recipient-reported use", () => {
+    const transfer = db.reserve("l-grounds", compost.businessId, 30, cafe);
+    expect(() => db.act(transfer.id, estimateAction(), cafe)).toThrow(
+      "completed transfer",
+    );
+    book(transfer, compost);
+    db.act(transfer.id, { action: "receive", acceptedKg: 30 }, compost);
+    expect(() => db.act(transfer.id, estimateAction(), cafe)).toThrow(
+      "completed transfer",
+    );
+    db.act(transfer.id, { action: "confirm" }, cafe);
+    expect(() => db.act(transfer.id, estimateAction(), cafe)).toThrow(
+      "reported use",
+    );
+    expect(db.transfers()[0].methaneAssumptions).toBeNull();
+  });
+  it("does not permit beans to acquire a grounds methane estimate", () => {
+    const transfer = completedUse(buyer, "l-beans", 6);
+    expect(() => db.act(transfer.id, estimateAction(), cafe)).toThrow(
+      "grounds only",
+    );
+    expect(db.transfers()[0].reportedUseKg).toBe(6);
+    expect(db.transfers()[0].methaneAssumptions).toBeNull();
+  });
+  it("refuses the compost shortcut for mushrooms and requires a custom source/factor", () => {
+    const transfer = completedUse(mushroom);
+    expect(() => db.act(transfer.id, estimateAction(), mushroom)).toThrow(
+      "not a compost processor",
+    );
+    expect(() =>
+      db.act(
+        transfer.id,
+        estimateAction({
+          ...assumptions,
+          destination: "custom",
+          destinationSource: "Assumed treatment",
+        }),
+        mushroom,
+      ),
+    ).toThrow("complete methane assumptions");
+    const custom = {
+      ...assumptions,
+      destination: "custom" as const,
+      customDestinationKgCH4PerKg: 0.001,
+      destinationSource: "Assumed methane from mushroom treatment.",
+    };
+    const saved = db.act(transfer.id, estimateAction(custom), mushroom);
+    expect(saved.methaneAssumptions).toEqual(custom);
+    const result = estimateRecordedMethane(
+      saved,
+      db.listing(transfer.listingId),
+      RECIPIENTS[0],
+    );
+    expect(result.methaneKg).toBeCloseTo(2.22);
+  });
+  it("saves unresolved assumptions as unknown instead of claiming an estimate", () => {
+    const transfer = completedUse();
+    const saved = db.act(
+      transfer.id,
+      estimateAction({
+        ...assumptions,
+        disposal: "unknown",
+        wetMassBasis: false,
+      }),
+      cafe,
+    );
+    expect(
+      estimateRecordedMethane(
+        saved,
+        db.listing(transfer.listingId),
+        RECIPIENTS[1],
+      ).reasonCode,
+    ).toBe("unknown_disposal");
+    expect(
+      summarizeRecordedMethane(db.transfers(), db.listings(), RECIPIENTS)
+        .methaneKg,
+    ).toBeNull();
+  });
+  it("validates runtime assumption bounds even when called outside a validated route", () => {
+    const transfer = completedUse();
+    expect(() =>
+      db.act(
+        transfer.id,
+        estimateAction({ ...assumptions, landfillGasCapturePercent: 101 }),
+        cafe,
+      ),
+    ).toThrow("allowed ranges");
+    expect(db.transfers()[0].methaneAssumptions).toBeNull();
+  });
+  it("rejects corrupt reported use greater than accepted weight without altering the row", () => {
+    const transfer = completedUse();
+    const corrupt = { ...transfer, acceptedKg: 25 };
+    db.db
+      .prepare("UPDATE transfers SET data = ? WHERE id = ?")
+      .run(JSON.stringify(corrupt), transfer.id);
+    expect(() => db.act(transfer.id, estimateAction(), cafe)).toThrow(
+      "valid accepted quantity",
+    );
+    expect(db.transfers()[0]).toEqual(corrupt);
+  });
+  it("keeps legacy transfer methane assumptions empty without inventing savings", () => {
+    const transfer = completedUse();
+    const legacy = { ...transfer } as Partial<Transfer>;
+    delete legacy.methaneAssumptions;
+    db.db
+      .prepare("UPDATE transfers SET data = ? WHERE id = ?")
+      .run(JSON.stringify(legacy), transfer.id);
+    expect(db.transfers()[0].methaneAssumptions).toBeNull();
+    expect(
+      summarizeRecordedMethane(db.transfers(), db.listings(), RECIPIENTS)
+        .excludedReasons,
+    ).toEqual({ missing_assumptions: 1 });
   });
 });

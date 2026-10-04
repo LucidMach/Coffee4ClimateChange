@@ -140,8 +140,9 @@ export function CoffeeMetrics({ workspace }: { workspace: ReactNode }) {
             </>
           ) : (
             <>
-              Reuse is recipient-reported. Actual emissions benefit remains
-              unknown.
+              Reuse is recipient-reported. Methane figures use saved assumptions
+              and reported-use grounds; they are lifetime estimates, not
+              measured emissions.
             </>
           )}
         </p>

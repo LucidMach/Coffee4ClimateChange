@@ -5,6 +5,8 @@ import { randomUUID } from "node:crypto";
 import type { SavedExplanation } from "./ai-record";
 import { RECIPIENTS, seedListings } from "./fixtures";
 import { matchListing } from "./engine";
+import { isCompostRecipient } from "./recorded-methane";
+import { methaneAssumptionsSchema } from "./domain";
 import type {
   Listing,
   ListingInput,
@@ -69,7 +71,11 @@ export class NileStore {
     ).map((r) => {
       const t = JSON.parse(r.data) as Transfer;
       // Legacy receipts remain intact; no readiness is invented for old records.
-      return { ...t, collection: t.collection ?? null };
+      return {
+        ...t,
+        collection: t.collection ?? null,
+        methaneAssumptions: t.methaneAssumptions ?? null,
+      };
     });
   }
   listings(): Listing[] {
@@ -194,6 +200,7 @@ export class NileStore {
         useNote: "",
         disputeNote: "",
         collection: null,
+        methaneAssumptions: null,
       };
       this.db
         .prepare("INSERT INTO transfers(id, listing_id, data) VALUES (?, ?, ?)")
@@ -328,6 +335,45 @@ export class NileStore {
           t.reportedUseKg = action.quantityKg;
           t.useNote = action.note;
           break;
+        case "estimate_methane": {
+          if (t.status !== "completed" || !(t.reportedUseKg! > 0))
+            fail(
+              "Save methane assumptions after a completed transfer and reported use.",
+            );
+          if (
+            !Number.isFinite(t.reportedUseKg) ||
+            !Number.isFinite(t.acceptedKg) ||
+            t.acceptedKg === null ||
+            t.reportedUseKg! > t.acceptedKg ||
+            !Number.isFinite(t.agreedKg) ||
+            t.acceptedKg > t.agreedKg
+          )
+            fail("Reported use cannot exceed a valid accepted quantity.");
+          const listing = this.listing(t.listingId);
+          if (listing.material !== "grounds")
+            fail("Methane estimates are available for spent grounds only.");
+          const parsed = methaneAssumptionsSchema.safeParse(action.assumptions);
+          if (!parsed.success)
+            throw new DomainError(
+              "Enter complete methane assumptions within the allowed ranges.",
+              400,
+            );
+          const recipientRecord = RECIPIENTS.find(
+            (r) => r.id === t.recipientId,
+          );
+          if (!recipientRecord)
+            fail("The transfer recipient could not be found.");
+          if (
+            parsed.data.destination === "compost" &&
+            !isCompostRecipient(recipientRecord!)
+          )
+            fail(
+              "This recipient is not a compost processor. Enter a custom treatment methane factor and source.",
+            );
+          // Replacing assumptions never changes receipt weight, reported use or status.
+          t.methaneAssumptions = parsed.data;
+          break;
+        }
       }
       this.db
         .prepare("UPDATE transfers SET data = ? WHERE id = ?")

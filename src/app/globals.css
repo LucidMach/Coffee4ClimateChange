@@ -146,6 +146,95 @@
   margin: 6px 0 0;
   padding-left: 18px;
 }
+.methane-brief {
+  margin: 20px 0;
+  padding: 20px;
+  border: 1px solid #d4dfcb;
+  border-radius: 14px;
+  background: #f0f4e9;
+}
+.methane-brief h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 17px;
+}
+.methane-result {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 18px 0;
+  overflow-wrap: anywhere;
+}
+.methane-result strong {
+  color: #30694f;
+  font-size: clamp(20px, 3vw, 30px);
+  letter-spacing: -0.5px;
+}
+.methane-result small {
+  color: #586950;
+  font-size: 12px;
+}
+.methane-form,
+.methane-method {
+  margin-top: 18px;
+}
+.methane-form summary,
+.methane-method summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 15px;
+}
+.methane-capture span {
+  color: #586950;
+  font-size: 12px;
+  font-weight: normal;
+}
+.methane-preview {
+  padding: 14px;
+  margin: 16px 0;
+  background: #e1ead7;
+  border-radius: 10px;
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.methane-method p,
+.methane-method a {
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.methane-method a,
+.recorded-methane .text-link {
+  color: #30694f;
+  text-decoration: underline;
+}
+.recorded-methane {
+  margin-bottom: 24px;
+}
+.recorded-methane > p {
+  margin-bottom: 14px;
+}
+.recorded-methane .text-link {
+  display: block;
+  font-size: 12px;
+  margin-top: 16px;
+}
+.methane-negative {
+  color: #805526;
+}
+@media (max-width: 600px) {
+  .methane-brief {
+    padding: 15px;
+  }
+  .methane-brief .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 .collection-footer {
   display: flex;
   flex-wrap: wrap;

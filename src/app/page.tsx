@@ -1,6 +1,7 @@
 import { NileApp } from "@/components/nile-app";
 import { RECIPIENTS } from "@/lib/fixtures";
 import { calculateMetrics } from "@/lib/engine";
+import { summarizeRecordedMethane } from "@/lib/recorded-methane";
 import { withJudgeStore } from "@/lib/judge-store";
 import { judgeDemoEnabled } from "@/lib/judge-session";
 import { getSession } from "@/lib/server";
@@ -16,6 +17,11 @@ export default async function Home() {
       transfers,
       recipients: RECIPIENTS,
       metrics: calculateMetrics(listings, transfers, RECIPIENTS),
+      recordedMethane: summarizeRecordedMethane(
+        transfers,
+        listings,
+        RECIPIENTS,
+      ),
       session,
       storage: judgeDemoEnabled()
         ? ("hosted-isolated-demo" as const)

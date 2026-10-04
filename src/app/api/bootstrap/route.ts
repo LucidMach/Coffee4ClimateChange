@@ -3,6 +3,7 @@ import { withJudgeStore } from "@/lib/judge-store";
 import { judgeDemoEnabled } from "@/lib/judge-session";
 import { RECIPIENTS } from "@/lib/fixtures";
 import { calculateMetrics } from "@/lib/engine";
+import { summarizeRecordedMethane } from "@/lib/recorded-methane";
 import { apiError, getSession } from "@/lib/server";
 import { aiConfigured } from "@/lib/ai";
 export const dynamic = "force-dynamic";
@@ -17,6 +18,11 @@ export async function GET() {
         transfers,
         recipients: RECIPIENTS,
         metrics: calculateMetrics(listings, transfers, RECIPIENTS),
+        recordedMethane: summarizeRecordedMethane(
+          transfers,
+          listings,
+          RECIPIENTS,
+        ),
         session,
         storage: judgeDemoEnabled() ? "hosted-isolated-demo" : "local-sqlite",
         ai: {

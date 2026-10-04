@@ -61,6 +61,11 @@ import { CoffeeMetrics } from "./coffee-metrics";
 import { CollectionBrief } from "./collection-brief";
 import { AdoptionPanel } from "./adoption-panel";
 import { CoffeeQualityPredictor } from "./coffee-quality-predictor";
+import {
+  MethaneEstimateBrief,
+  RecordedMethanePanel,
+  methaneTonnes,
+} from "./methane-estimate";
 const PurchasePlanner = dynamic(() =>
   import("./purchase-planner").then((module) => module.PurchasePlanner),
 );
@@ -330,7 +335,9 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
       setToast(
         action.action === "report_use"
           ? "Use reported. Transfer and reuse remain separate measures."
-          : "Handover updated.",
+          : action.action === "estimate_methane"
+            ? "Methane estimate saved with its assumptions."
+            : "Handover updated.",
       );
     } catch (e) {
       setError((e as Error).message);
@@ -498,9 +505,9 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
                     icon={Package}
                   />
                   <Metric
-                    label="CO₂e avoided"
-                    value="Not known"
-                    detail="kg CO₂e · baseline, reuse & transport needed"
+                    label="Estimated methane avoided"
+                    value={methaneTonnes(data.recordedMethane.methaneKg)}
+                    detail={`${data.recordedMethane.estimatedTransfers} batches modelled · lifetime estimate`}
                     icon={Leaf}
                   />
                 </>
@@ -1074,12 +1081,16 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
                         icon={Package}
                       />
                       <Metric
-                        label="Climate benefit"
-                        value="Not known"
-                        detail="Validated baseline & route required"
+                        label="Estimated methane avoided"
+                        value={methaneTonnes(data.recordedMethane.methaneKg)}
+                        detail={`${data.recordedMethane.estimatedTransfers} batches modelled · lifetime estimate`}
                         icon={Leaf}
                       />
                     </section>
+                    <RecordedMethanePanel
+                      summary={data.recordedMethane}
+                      onReviewHandovers={() => navigate("handovers")}
+                    />
                     <div className="overview-grid">
                       <section className="panel">
                         <div className="section-heading">
@@ -1120,9 +1131,11 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
                             much was used and how.
                           </p>
                           <p>
-                            <strong>Estimated emissions</strong>Requires a
-                            sourced baseline, processing and additional
-                            transport. Zero and negative outcomes are possible.
+                            <strong>Estimated methane</strong>Modelled from
+                            reported-use grounds and saved disposal and
+                            treatment assumptions. Zero and negative outcomes
+                            are retained. Transport and net greenhouse-gas
+                            benefit need a separate assessment.
                           </p>
                         </div>
                       </section>
@@ -2024,6 +2037,16 @@ function HandoverCard({
                 <ArrowRight size={16} />
               </Button>
             </div>
+          )}
+          {listing.material === "grounds" && (
+            <MethaneEstimateBrief
+              transfer={t}
+              listing={listing}
+              recipient={recipientData}
+              session={session}
+              busy={busy}
+              onAction={onAction}
+            />
           )}
         </>
       )}

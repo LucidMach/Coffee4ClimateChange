@@ -152,6 +152,68 @@ export const sessionSchema = z.object({
 });
 export type TransferStatus =
   "proposed" | "booked" | "received" | "completed" | "disputed" | "cancelled";
+export const methaneAssumptionsSchema = z
+  .object({
+    disposal: z.enum(["landfill", "compost", "unknown"]),
+    landfillGasCapturePercent: z.number().min(0).max(100),
+    destination: z.enum(["compost", "custom"]),
+    customDestinationKgCH4PerKg: z.number().min(0).max(1).nullable(),
+    destinationSource: z.string().trim().max(300),
+    wetMassBasis: z.boolean(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.destination === "custom") {
+      if (value.customDestinationKgCH4PerKg === null)
+        ctx.addIssue({
+          code: "custom",
+          path: ["customDestinationKgCH4PerKg"],
+          message: "Enter the assumed destination methane factor.",
+        });
+      if (value.destinationSource.length < 8)
+        ctx.addIssue({
+          code: "custom",
+          path: ["destinationSource"],
+          message:
+            "Describe the source or basis of your destination assumption.",
+        });
+    }
+  });
+export type MethaneAssumptions = z.infer<typeof methaneAssumptionsSchema>;
+export type RecordedMethaneReason =
+  | "estimate"
+  | "not_completed"
+  | "missing_record"
+  | "material_not_supported"
+  | "no_reported_use"
+  | "invalid_quantity"
+  | "missing_assumptions"
+  | "invalid_assumptions"
+  | "unknown_disposal"
+  | "wet_mass_required"
+  | "destination_mismatch";
+export type RecordedMethaneResult = {
+  status: "estimate" | "unknown";
+  methaneKg: number | null;
+  roundedMethaneKg: number | null;
+  quantityKg: number;
+  baselineKgCH4PerKg: number | null;
+  destinationKgCH4PerKg: number | null;
+  reason: string;
+  reasonCode: RecordedMethaneReason;
+  source: string;
+  boundary: string;
+};
+export type RecordedMethaneSummary = {
+  methaneKg: number | null;
+  roundedMethaneKg: number | null;
+  estimatedTransfers: number;
+  excludedTransfers: number;
+  includedReportedUseKg: number;
+  excludedReasons: Partial<Record<RecordedMethaneReason, number>>;
+  results: (RecordedMethaneResult & { transferId: string })[];
+  source: string;
+  boundary: string;
+};
 export type Transfer = {
   id: string;
   listingId: string;
@@ -170,6 +232,7 @@ export type Transfer = {
   useNote: string;
   disputeNote: string;
   collection: CollectionBrief | null;
+  methaneAssumptions?: MethaneAssumptions | null;
 };
 export type CollectionBrief = {
   revision: number;
@@ -212,6 +275,10 @@ export const actionSchema = z.discriminatedUnion("action", [
     quantityKg: z.number().positive().max(10000),
     note: z.string().trim().min(8).max(500),
   }),
+  z.object({
+    action: z.literal("estimate_methane"),
+    assumptions: methaneAssumptionsSchema,
+  }),
 ]);
 export type TransferAction = z.infer<typeof actionSchema>;
 export type Match = {
@@ -243,6 +310,7 @@ export type Bootstrap = {
   recipients: Recipient[];
   transfers: Transfer[];
   metrics: Metrics;
+  recordedMethane: RecordedMethaneSummary;
   session: Session;
   ai: { configured: boolean; model: string | null };
   storage: "local-sqlite" | "hosted-isolated-demo";

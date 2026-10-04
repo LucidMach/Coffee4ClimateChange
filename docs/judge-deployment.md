@@ -52,7 +52,10 @@ OpenAI credit. See [model hosting](hosted-quality-model.md).
 5. Record the accepted weight, return to the supplier and confirm receipt.
 6. Separately report actual use as the recipient. Network metrics distinguish
    proposed, accepted and reported-used quantities.
-7. Open another private browser context. It should have its own three-batch seed.
+7. For a completed grounds handover, save explicit methane assumptions. Its
+   lifetime estimate and included weight appear in Network impact and survive a
+   refresh. See [the model and its boundary](recorded-methane.md).
+8. Open another private browser context. It should have its own three-batch seed.
 
 Use the opt-in hosted test after deployment:
 

@@ -34,7 +34,7 @@ Start with the upper coffee story panel. On phones it keeps a dedicated animatio
 
 The green opening leads with **Less coffee waste. Less methane.** and directly links to COP31's zero-waste priority and goal to halve global waste growth by 2035. The metrics under the orbit open in **Australia**, an explicitly illustrative scenario: annual grounds generated, potential tonnes kept out of landfill, lifetime tonnes of methane potentially avoided, and a café outreach target. A **1–10% slider in 0.5% steps** sets separate diversion and outreach goals. Café targets use IBISWorld's October 2025 estimate of 28,154 businesses for 2025–26; contact is not proof of diversion. **Assumptions & sources** shows the calculation and lets you vary landfill gas capture. These are not measured Nile savings or businesses already contacted; see [the climate method](docs/climate-scenario.md).
 
-**Our records** shows the original seven workspace metrics: available material, confirmed handovers, net benefit, total reported use, waste reported reused, beans kept in use and CO₂e avoided. Reuse comes from recipient reports after confirmed transfers; actual emissions remain “Not known” until a sourced disposal, reuse and transport scenario is validated. The row scrolls horizontally on smaller screens.
+**Our records** shows available material, confirmed handovers, net benefit, total reported use, waste reported reused, beans kept in use and **estimated lifetime methane avoided**. Complete a grounds handover, report actual use and save disposal/treatment assumptions in that batch to enable its estimate. The network view shows the total, included weights and reasons for excluded handovers. Measured weights remain separate from this model; see [recorded methane estimates](docs/recorded-methane.md). The row scrolls horizontally on smaller screens.
 
 Click a circle to reveal its working tab. The selector stays visible while browsing; the bottom slider, arrow buttons and horizontal touch gestures also switch stages. In **Overview**, **Find a next use** opens grounds matching and **Find a bean buyer** opens surplus-bean matching. The plus button creates a listing.
 
@@ -51,6 +51,7 @@ Click a circle to reveal its working tab. The selector stays visible while brows
 - Partial receipt releases the unaccepted remainder after confirmation.
 - Recipient-reported use is recorded separately and replaces earlier reports without double counting.
 - Network dashboard, weekly recorded-transfer chart and CSV records.
+- Persistent, per-batch methane assumptions with lifetime estimates from reported-use wet grounds. Compost uses a disclosed food-waste proxy; other routes require a custom treatment factor and its stated basis. Zero and negative estimates remain visible; beans receive no grounds methane credit.
 - Compatible-pool planning with individual batch IDs and overlapping windows. Suggestions do not reserve material; multi-batch booking is a next step.
 - Mobile navigation, keyboard-accessible native modal panels and a built-in demo guide.
 - Optional OpenAI structured explanation with a clearly labelled rules fallback.
@@ -93,7 +94,7 @@ The model explains validated facts after rechecking current stock and recipient 
 
 The demo charges no platform fee. Handling is entered **per handover**, not per kilogram. Collection fees come from the sample recipient terms. Unknown inputs remain unknown. An unchanged fixed disposal bill has zero avoided cost; an EPA levy is not a café's saving. Sale value under agreed terms is not proof of payment.
 
-Listings are intentions. A shared receipt confirms a transfer. A recipient's use report is a separate self-report, not independently verified reuse. The app reports **no automatic carbon savings**. An emissions calculation requires an actual disposal baseline, destination process, incremental transport, compatible wet/dry mass basis, region, source version and boundary. Its result can be zero or negative. No avoided coffee-growing lifecycle impact is assumed for surplus beans.
+Listings are intentions. A shared receipt confirms a transfer. A recipient's use report is a separate self-report, not independently verified reuse. Methane is estimated only after a completed grounds handover has reported use and explicit saved assumptions. This lifetime comparison uses NGA 2026 generic food-waste proxies and an assumed wet-weight basis; it excludes transport, energy, nitrous oxide and downstream residues. Net greenhouse-gas benefit still needs those wider inputs and validation. Results can be zero or negative. No avoided coffee-growing lifecycle impact is assumed for surplus beans.
 
 ## Checks
 
