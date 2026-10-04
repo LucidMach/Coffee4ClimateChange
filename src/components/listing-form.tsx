@@ -18,6 +18,7 @@ import {
   type Material,
 } from "@/lib/domain";
 import { Button } from "./ui/button";
+import type { Supplier } from "@/lib/fixtures";
 import { Sheet } from "./sheet";
 
 const MATERIAL_ICONS = {
@@ -40,13 +41,18 @@ const SPOTS = {
   "Carlton, Melbourne": [-37.798, 144.967],
   "Brunswick, Melbourne": [-37.767, 144.972],
   "Richmond, Melbourne": [-37.822, 145.003],
+  "Preston, Melbourne": [-37.738, 145.004],
+  "Collingwood, Melbourne": [-37.805, 144.989],
+  "Cairns, Queensland": [-16.918, 145.778],
 };
 export function ListingForm({
   repeat,
+  supplier,
   onClose,
   onSave,
 }: {
   repeat?: Listing;
+  supplier?: Supplier;
   onClose: () => void;
   onSave: (v: ListingInput) => Promise<void>;
 }) {
@@ -57,7 +63,7 @@ export function ListingForm({
   const [fields, setFields] = useState({
     title: repeat?.title ?? "This morning’s coffee grounds",
     quantity: String(repeat?.quantityKg ?? 30),
-    location: repeat?.location ?? "Fitzroy, Melbourne",
+    location: repeat?.location ?? supplier?.location ?? "Fitzroy, Melbourne",
     condition: repeat?.condition ?? "clean",
     storage: repeat?.storage ?? "chilled",
     packaging: repeat?.packaging ?? "not_applicable",
@@ -106,7 +112,7 @@ export function ListingForm({
           ? "farm_mill"
           : material === "chaff"
             ? "roaster"
-            : "cafe",
+            : (repeat?.origin ?? supplier?.origin ?? "cafe"),
         quantityKg: Number(fields.quantity),
         location: fields.location,
         lat: spot[0],

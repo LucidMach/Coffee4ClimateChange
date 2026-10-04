@@ -51,6 +51,7 @@ import {
   type TransferAction,
 } from "@/lib/domain";
 import { compatiblePools, netValue } from "@/lib/engine";
+import { SUPPLIERS } from "@/lib/fixtures";
 import type { Explanation } from "@/lib/ai";
 import { Button } from "./ui/button";
 import { Sheet } from "./sheet";
@@ -206,7 +207,11 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
   const outstanding = shownTransfers.filter(
     (t) => !["completed", "cancelled"].includes(t.status),
   ).length;
-  const visibleListings = data.listings.filter((l) =>
+  // Supplier workspaces show their own batches; network/recipient views can browse all.
+  const workspaceListings = cafe
+    ? data.listings.filter((l) => l.supplierId === data.session.businessId)
+    : data.listings;
+  const visibleListings = workspaceListings.filter((l) =>
     `${l.title} ${MATERIALS[l.material].name}`
       .toLowerCase()
       .includes(filter.toLowerCase()),
@@ -217,9 +222,20 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
       "Recipient")
     : data.session.role === "network"
       ? "Network overview"
-      : "Common Ground Café";
+      : (SUPPLIERS.find((s) => s.id === data.session.businessId)?.name ??
+        "Supplier");
+  const businessLocation = recipient
+    ? (data.recipients.find((r) => r.id === data.session.businessId)
+        ?.location ?? "Melbourne")
+    : cafe
+      ? (SUPPLIERS.find((s) => s.id === data.session.businessId)?.location ??
+        "Melbourne")
+      : "Melbourne";
   const active = data.listings.filter(
     (l) => l.availableKg > 0 && new Date(l.expiresAt) > new Date(),
+  );
+  const supplierActive = active.filter(
+    (l) => l.supplierId === data.session.businessId,
   );
 
   useEffect(() => {
@@ -260,6 +276,7 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
       await request("/api/session", { role, businessId });
       await reload();
       setSelectedId(null);
+      setFilter("");
       navigate(
         targetView ??
           (role === "recipient"
@@ -501,7 +518,7 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
                 <span className="eyebrow">YOUR COFFEE VALUE ENGINE</span>
                 <strong>{business}</strong>
                 <span className="engine-location">
-                  <MapPin size={12} /> Melbourne · AUD
+                  <MapPin size={12} /> {businessLocation} · AUD
                 </span>
               </div>
             </div>
@@ -575,6 +592,28 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
               <span>LIST. MATCH. HAND OVER. KEEP THE PROOF.</span>
               <span>0{stageIndex + 1} / 06</span>
             </div>
+            {cafe && (
+              <div className="recipient-select supplier-select">
+                <label>
+                  Supplier workspace
+                  <select
+                    aria-label="Demo supplier"
+                    value={data.session.businessId}
+                    disabled={busy === "workspace"}
+                    onChange={(e) => switchRole("cafe", e.target.value, view)}
+                  >
+                    {SUPPLIERS.map((supplier) => (
+                      <option key={supplier.id} value={supplier.id}>
+                        {supplier.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <span className="badge sample">
+                  Fictional suppliers · test workspace
+                </span>
+              </div>
+            )}
             <div
               className="stage-viewport"
               onTouchStart={(event) => {
@@ -697,9 +736,11 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
                         </p>
                         <Button
                           onClick={() =>
-                            active.find((l) => l.material === "grounds")
+                            supplierActive.find((l) => l.material === "grounds")
                               ? openMatches(
-                                  active.find((l) => l.material === "grounds")!,
+                                  supplierActive.find(
+                                    (l) => l.material === "grounds",
+                                  )!,
                                 )
                               : setForm({})
                           }
@@ -731,9 +772,11 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
                         <Button
                           variant="secondary"
                           onClick={() =>
-                            active.find((l) => l.material === "beans")
+                            supplierActive.find((l) => l.material === "beans")
                               ? openMatches(
-                                  active.find((l) => l.material === "beans")!,
+                                  supplierActive.find(
+                                    (l) => l.material === "beans",
+                                  )!,
                                 )
                               : setForm({})
                           }
@@ -821,7 +864,7 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
                           </button>
                         </div>
                         <div className="listing-stack">
-                          {data.listings.slice(0, 3).map((l) => (
+                          {workspaceListings.slice(0, 3).map((l) => (
                             <ListingRow
                               key={l.id}
                               listing={l}
@@ -1266,6 +1309,7 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
       {form && (
         <ListingForm
           repeat={form.repeat}
+          supplier={SUPPLIERS.find((s) => s.id === data.session.businessId)}
           onClose={() => setForm(null)}
           onSave={saveListing}
         />
@@ -1348,7 +1392,9 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
                   recommended={index === 0 && match.eligibility === "eligible"}
                   busy={busy === match.recipient.id}
                   explaining={busy === `explain-${match.recipient.id}`}
-                  canPropose={cafe}
+                  canPropose={
+                    cafe && selected.supplierId === data.session.businessId
+                  }
                   onPropose={(quantity) => propose(match, quantity)}
                   onExplain={() => explain(match)}
                 />
@@ -2140,7 +2186,11 @@ function PoolPlanner({
               {kg(pool.kg)} / {recipient.minKg} kg
             </span>
             <span className={`badge ${pool.ready ? "ready" : "pending"}`}>
-              {pool.ready ? "Minimum met" : "More compatible material needed"}
+              {pool.ready
+                ? "Minimum met"
+                : pool.kg > recipient.capacityKg
+                  ? "Exceeds recipient capacity"
+                  : "More compatible material needed"}
             </span>
           </div>
         ))

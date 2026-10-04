@@ -362,6 +362,12 @@ input {
   scroll-margin-top: 84px;
   position: relative;
 }
+.supplier-select {
+  margin: 0;
+  padding: 14px 30px;
+  border-bottom: 1px solid #33472c13;
+  background: #eee9dd;
+}
 .engine-dock {
   position: sticky;
   top: 84px;
@@ -1324,6 +1330,9 @@ input {
   }
   .engine-section {
     scroll-margin-top: 68px;
+  }
+  .supplier-select {
+    padding: 12px 18px;
   }
   .engine-dock {
     top: 68px;

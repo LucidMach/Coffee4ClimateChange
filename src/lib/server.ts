@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
-import { RECIPIENTS } from "./fixtures";
+import { RECIPIENTS, SUPPLIERS } from "./fixtures";
 import { sessionSchema, type Session } from "./domain";
 import { DomainError } from "./store";
 
@@ -24,7 +24,9 @@ export function validSession(s: Session) {
     ? RECIPIENTS.some(
         (r) => r.id === s.businessId && r.demand === "demo_active",
       )
-    : s.businessId === "c-demo";
+    : s.role === "cafe"
+      ? SUPPLIERS.some((supplier) => supplier.id === s.businessId)
+      : s.businessId === "c-demo";
 }
 /** Enforce local JSON writes and same-origin browser requests for this demo. */
 export function guardMutation(request: Request) {
