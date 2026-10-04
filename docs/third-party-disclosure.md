@@ -22,13 +22,13 @@ This disclosure describes the Nile prototype and these submission materials as p
 | Supabase                                     | SQL schema and organization read policies prepared; hosted Auth, database repository and Storage are not connected. |
 | Vitest, Playwright, PGlite                   | Unit, browser/API and actual Postgres migration/access-policy tests in isolated local data.                         |
 | ESLint, Prettier, agent-browser              | Code checks, formatting and browser inspection.                                                                     |
-| Git and GitHub                               | Source version control and repository hosting; the app is on `codex/nile-initial-build`.                            |
-| Python, Flask, gunicorn                      | Coffee quality model service (`ml_service/`); runs locally, not deployed in this build.                             |
+| Git and GitHub                               | Source version control and repository hosting; hosted release source is on `codex/hosted-judge-demo`.               |
+| Python, Flask, gunicorn                      | Coffee quality model service (`ml_service/`); local service and a verified Vercel Python function.                  |
 | scikit-learn, pandas, joblib                 | Random Forest training, preprocessing and model persistence.                                                        |
 | Notion                                       | Team planning and project documentation.                                                                            |
 | Artifact Tool, LibreOffice, pypdf, pypdfium2 | Updated editable PowerPoint, PDF conversion, text checks and page rendering; original PDF used ReportLab.           |
 
-The dependency versions are recorded in `package.json` and `package-lock.json`; package licensing remains governed by the respective maintainers. No Figma or Canva use was reported. Vercel deployment, a Claude API integration, Jev, live business discovery, payment processing and smart measurement modules are not active integrations in this build.
+The dependency versions are recorded in `package.json` and `package-lock.json`; package licensing remains governed by the respective maintainers. No Figma or Canva use was reported. Vercel and private Blob run the verified public judge demo; see [judge deployment](judge-deployment.md) for the sandbox boundary and verification status. A Claude API integration, Jev, live business discovery, payment processing and smart measurement modules are not active integrations.
 
 ## Reference data and research
 
@@ -43,3 +43,5 @@ The dependency versions are recorded in `package.json` and `package-lock.json`; 
 The source and boundary notes are in [climate-scenario.md](climate-scenario.md). The main submission description and PDF do not present a calculated methane figure as achieved impact.
 
 The updated presentation adds a separate hypothetical 100-cafe cohort; see [presentation-impact-assumptions.md](presentation-impact-assumptions.md). Four cafe interviews are team-reported qualitative feedback, not measured quantities. Reground's public [grounds](https://reground.com.au/collection/ground-coffee/), [chaff](https://reground.com.au/collection/chaff/), [Circular Coffee](https://reground.com.au/collection/circular-coffee/) and [consultancy](https://reground.com.au/consultancy/) pages support the comparison; no partnership is agreed.
+
+The hosted judge adapter uses `@vercel/blob` for private per-browser snapshots with conditional writes. The Python WSGI entrypoint packages the existing trained model without retraining. Public judge mode disables live OpenAI calls; its match explanations use labelled rules.

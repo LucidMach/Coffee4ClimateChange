@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/store";
+import { withJudgeStore } from "@/lib/judge-store";
+import { judgeDemoEnabled } from "@/lib/judge-session";
 import { RECIPIENTS } from "@/lib/fixtures";
 import { calculateMetrics } from "@/lib/engine";
 import { apiError, getSession } from "@/lib/server";
@@ -7,24 +8,26 @@ import { aiConfigured } from "@/lib/ai";
 export const dynamic = "force-dynamic";
 export async function GET() {
   try {
-    const db = getStore(),
-      listings = db.listings(),
-      transfers = db.transfers();
-    return NextResponse.json(
-      {
+    const session = await getSession();
+    const data = await withJudgeStore((db) => {
+      const listings = db.listings(),
+        transfers = db.transfers();
+      return {
         listings,
         transfers,
         recipients: RECIPIENTS,
         metrics: calculateMetrics(listings, transfers, RECIPIENTS),
-        session: await getSession(),
-        storage: "local-sqlite",
+        session,
+        storage: judgeDemoEnabled() ? "hosted-isolated-demo" : "local-sqlite",
         ai: {
           configured: aiConfigured(),
           model: aiConfigured() ? process.env.OPENAI_MODEL : null,
         },
-      },
-      { headers: { "Cache-Control": "no-store" } },
-    );
+      };
+    });
+    return NextResponse.json(data, {
+      headers: { "Cache-Control": "private, no-store" },
+    });
   } catch (error) {
     return apiError(error);
   }

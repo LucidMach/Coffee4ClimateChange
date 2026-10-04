@@ -1,6 +1,10 @@
-# Build status — 4 October 2026
+# Build status — 5 October 2026
 
-## Delivered locally
+## Hosted judge release
+
+**Public demo:** [Open Nile](https://nile-judge-demo.vercel.app). Anonymous access, private browser-scoped persistence, both material handovers and the Python quality predictor are live verified. The public sandbox disables OpenAI calls and uses labelled rules explanations. Supabase and real business authentication remain unconnected. Current checks: 72 unit/database/API tests, 15 local browser/API tests and two targeted hosted tests pass; the production builds, lint, types and formatting pass. See [deployment evidence](judge-deployment.md).
+
+## Local implementation and earlier checks
 
 Next.js + TypeScript, Tailwind styling, a shadcn-style Radix/CVA button, Zod validation, deterministic matching, SQLite persistence, two-sided handover/receipt flows, separate use reporting, Recharts dashboard, compatible pool planning and CSV export. Café adoption tools now include a revisioned shared collection brief, browser-only usage-based purchasing and budget planning, and a downloadable Nile participation record. See [adoption tools](adoption-tools.md).
 
@@ -25,7 +29,7 @@ The Supabase SQL foundation creates six tables with organization access policies
 
 Validate the configured OpenAI key with a live model check; Supabase account authentication, repository adapter, transactional reservation/receipt RPCs and scoped photo storage; hosted policy verification; real recipient acceptance and quotes; exact-address routing; business lookup; optional measurement modules; reviewed impact factors; real payments and dispute resolution.
 
-The app is local and has not been deployed to Vercel. Ticket ownership and team assignments have not been changed by the build.
+The judge sandbox is now deployed to Vercel; the local implementation and existing data remain separate. Ticket ownership and team assignments have not been changed by the build.
 
 ## Validation
 

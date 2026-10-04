@@ -1,6 +1,8 @@
 # Nile
 
-A working local coffee waste-to-value demo: list a batch, compare compatible recipients, propose a handover, record the actual receipt and report how the material was used.
+A working coffee waste-to-value demo: list a batch, compare compatible recipients, propose a handover, record the actual receipt and report how the material was used.
+
+**Public judge demo:** [Open Nile](https://nile-judge-demo.vercel.app). No login is required; each browser gets separate fictional sample data.
 
 ## Run
 
@@ -55,7 +57,7 @@ Click a circle to reveal its working tab. The selector stays visible while brows
 - Saved, supplier-scoped explanations with actual provider token usage, a five-minute answer cache and concurrent-click deduplication.
 - Backend connection status and a local CLI checker; Supabase SQL foundation with locally tested organization access rules.
 - Browser-only CSV purchase planner: daily bean usage or drink totals → weekday baseline → business goal, stock and safety buffer → suggested packs and AUD budget comparison. Forecasts are estimates; no automatic orders or realized savings claims.
-- Coffee quality estimate in Overview: a Python Random Forest (`ml_service/`) predicts total cup score from origin, cupping and green-bean grading inputs, behind a server-side `/api/coffee-quality` proxy. Needs the model service running; see [coffee quality model](docs/coffee-quality-model.md).
+- Coffee quality estimate in Overview: a Python Random Forest (`ml_service/`) predicts total cup score from origin, cupping and green-bean grading inputs, behind a server-side `/api/coffee-quality` proxy. Uses the local model service or the bundled Vercel Python function; see [coffee quality model](docs/coffee-quality-model.md).
 - A downloadable Nile participation record from confirmed demo handovers and recipient-reported use. This is a scoped record, not COP31 accreditation or B Corp certification.
 
 The two complete demo pathways are **grounds → sample mushroom grower / compost processor** and **usable beans → sample café**. The other materials remain visible as the wider product vision; their real recipients and processing requirements need validation.
@@ -108,9 +110,11 @@ npm run test:e2e
 
 For an existing compatible Chrome installation, set `NILE_CHROME_PATH` to its executable for the E2E command. Tests deliberately clear OpenAI credentials and do not spend API credit. The production build uses Next.js's supported webpack compiler; Turbopack's build worker encountered local sandbox port restrictions during setup. The development server uses Turbopack.
 
-## Cloud launch and next work
+## Public judge demo and next work
 
-This build is deployed using Vercel, with transparent demo role switching instead of account authentication. `supabase/migrations/202610040001_foundation.sql` prepares six tables with scoped read policies and denies direct client writes; tests execute the migration and access rules in local Postgres via PGlite.
+The public judge mode uses a signed browser workspace and private Vercel Blob snapshots, preserving the existing SQLite rules in memory for each request. Changes survive refreshes and separate server instances; each judge receives independent sample data. Hosted writes require a same-origin JSON request. Live OpenAI calls are disabled in this public mode; labelled rules explanations and the trained Python quality model remain separate. See [judge deployment](docs/judge-deployment.md) and [hosted quality model](docs/hosted-quality-model.md) for configuration and verification.
+
+This is a sample sandbox with demo role switching, not real business account authentication. Cookie access expires after seven days; stored snapshots are not automatically deleted. Supabase has not been connected or provisioned. `supabase/migrations/202610040001_foundation.sql` prepares six tables with scoped read policies and denies direct client writes; tests execute the migration and access rules in local Postgres via PGlite.
 
 Before a public pilot, connect Supabase Auth and an organization-scoped repository, implement transaction-safe reservation/receipt RPCs, signed photo storage and shared AI request limits, then verify the prepared policies against hosted authenticated accounts. Then add real recipient acceptance and quotes, exact pickup addresses, road routing and sourced impact scenarios. Preserve the current engine and receipt invariants when replacing SQLite.
 

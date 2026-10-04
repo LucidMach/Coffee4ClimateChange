@@ -11,7 +11,8 @@ export async function POST(request: Request) {
     const response = NextResponse.json({ session });
     response.cookies.set("nile-demo-session", JSON.stringify(session), {
       httpOnly: true,
-      sameSite: "strict",
+      secure: new URL(request.url).protocol === "https:",
+      sameSite: "lax",
       path: "/",
       maxAge: 86400,
     });

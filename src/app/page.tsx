@@ -1,28 +1,30 @@
 import { NileApp } from "@/components/nile-app";
 import { RECIPIENTS } from "@/lib/fixtures";
 import { calculateMetrics } from "@/lib/engine";
-import { getStore } from "@/lib/store";
+import { withJudgeStore } from "@/lib/judge-store";
+import { judgeDemoEnabled } from "@/lib/judge-session";
 import { getSession } from "@/lib/server";
 import { aiConfigured } from "@/lib/ai";
 export const dynamic = "force-dynamic";
 export default async function Home() {
-  const db = getStore(),
-    listings = db.listings(),
-    transfers = db.transfers();
-  return (
-    <NileApp
-      initial={{
-        listings,
-        transfers,
-        recipients: RECIPIENTS,
-        metrics: calculateMetrics(listings, transfers, RECIPIENTS),
-        session: await getSession(),
-        storage: "local-sqlite",
-        ai: {
-          configured: aiConfigured(),
-          model: aiConfigured() ? (process.env.OPENAI_MODEL ?? null) : null,
-        },
-      }}
-    />
-  );
+  const session = await getSession();
+  const initial = await withJudgeStore((db) => {
+    const listings = db.listings(),
+      transfers = db.transfers();
+    return {
+      listings,
+      transfers,
+      recipients: RECIPIENTS,
+      metrics: calculateMetrics(listings, transfers, RECIPIENTS),
+      session,
+      storage: judgeDemoEnabled()
+        ? ("hosted-isolated-demo" as const)
+        : ("local-sqlite" as const),
+      ai: {
+        configured: aiConfigured(),
+        model: aiConfigured() ? (process.env.OPENAI_MODEL ?? null) : null,
+      },
+    };
+  });
+  return <NileApp initial={initial} />;
 }

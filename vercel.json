@@ -1,0 +1,12 @@
+{
+  "framework": "nextjs",
+  "installCommand": "npm ci",
+  "buildCommand": "npm run build",
+  "regions": ["syd1"],
+  "functions": {
+    "api/coffee_model.py": {
+      "includeFiles": "ml_service/{app.py,coffee_quality_model.joblib}",
+      "excludeFiles": "{node_modules/**,.next/**,.git/**,.nile/**,public/**,output/**,src/**,e2e/**,docs/**,scripts/**,supabase/**,**/__pycache__/**,ml_service/data/**,ml_service/.venv/**,ml_service/train.py,ml_service/test_*.py}"
+    }
+  }
+}

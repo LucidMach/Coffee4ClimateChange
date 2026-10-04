@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
 import { apiError, getSession } from "@/lib/server";
-import { getStore, DomainError } from "@/lib/store";
+import { DomainError } from "@/lib/store";
+import { withJudgeStore } from "@/lib/judge-store";
 export async function GET(
   _request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { id } = await context.params;
-    const session = await getSession();
-    const explanation = getStore().explanation(id);
+    const { id } = await context.params,
+      session = await getSession();
+    const explanation = await withJudgeStore((db) => db.explanation(id));
     if (
       !explanation ||
       session.role !== "cafe" ||
@@ -20,7 +21,7 @@ export async function GET(
       );
     return NextResponse.json(
       { explanation },
-      { headers: { "Cache-Control": "no-store" } },
+      { headers: { "Cache-Control": "private, no-store" } },
     );
   } catch (error) {
     return apiError(error);

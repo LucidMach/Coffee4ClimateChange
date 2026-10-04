@@ -4,6 +4,7 @@ import { ZodError } from "zod";
 import { RECIPIENTS, SUPPLIERS } from "./fixtures";
 import { sessionSchema, type Session } from "./domain";
 import { DomainError } from "./store";
+import { judgeDemoEnabled } from "./judge-session";
 
 /**
  * Select a fictional workspace from the demo cookie; this is not account auth.
@@ -28,7 +29,7 @@ export function validSession(s: Session) {
       ? SUPPLIERS.some((supplier) => supplier.id === s.businessId)
       : s.businessId === "c-demo";
 }
-/** Enforce local JSON writes and same-origin browser requests for this demo. */
+/** Hosted sample writes require same-origin browser requests; local rules remain intact. */
 export function guardMutation(request: Request) {
   const url = new URL(request.url);
   // Next may normalise request.url to localhost while the browser uses 127.0.0.1.
@@ -36,13 +37,16 @@ export function guardMutation(request: Request) {
   const target = new URL(
     `${url.protocol}//${request.headers.get("host") || url.host}`,
   );
-  if (!["localhost", "127.0.0.1", "[::1]"].includes(target.hostname))
+  if (
+    !judgeDemoEnabled() &&
+    !["localhost", "127.0.0.1", "[::1]"].includes(target.hostname)
+  )
     throw new DomainError(
       "This demo accepts mutations on localhost only.",
       403,
     );
   const origin = request.headers.get("origin");
-  if (origin && origin !== target.origin)
+  if ((judgeDemoEnabled() && !origin) || (origin && origin !== target.origin))
     throw new DomainError("Cross-origin mutations are blocked.", 403);
   if (!request.headers.get("content-type")?.includes("application/json"))
     throw new DomainError("Send application/json.", 415);

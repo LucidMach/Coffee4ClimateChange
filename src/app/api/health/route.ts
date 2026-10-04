@@ -1,19 +1,21 @@
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/store";
+import { withJudgeStore } from "@/lib/judge-store";
+import { judgeDemoEnabled } from "@/lib/judge-session";
 import { apiError, getSession } from "@/lib/server";
 import { aiConfigured } from "@/lib/ai";
 export const dynamic = "force-dynamic";
 export async function GET() {
   try {
-    const db = getStore();
-    db.db.prepare("SELECT 1").get();
     const session = await getSession();
-    const last =
-      session.role === "cafe" ? db.latestExplanation(session.businessId) : null;
-    return NextResponse.json(
-      {
+    const data = await withJudgeStore((db) => {
+      db.db.prepare("SELECT 1").get();
+      const last =
+        session.role === "cafe"
+          ? db.latestExplanation(session.businessId)
+          : null;
+      return {
         status: "ready",
-        storage: "local-sqlite",
+        storage: judgeDemoEnabled() ? "hosted-isolated-demo" : "local-sqlite",
         authentication: "demo-workspaces",
         ai: {
           configured: aiConfigured(),
@@ -30,9 +32,11 @@ export async function GET() {
             : null,
         },
         supabase: { connected: false, schemaPrepared: true },
-      },
-      { headers: { "Cache-Control": "no-store" } },
-    );
+      };
+    });
+    return NextResponse.json(data, {
+      headers: { "Cache-Control": "private, no-store" },
+    });
   } catch (error) {
     return apiError(error);
   }

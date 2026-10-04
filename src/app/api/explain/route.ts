@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getStore } from "@/lib/store";
+import { withJudgeStore } from "@/lib/judge-store";
 import { createExplanation } from "@/lib/explanation-service";
 import { apiError, getSession, guardMutation } from "@/lib/server";
 export async function POST(request: Request) {
@@ -14,18 +14,20 @@ export async function POST(request: Request) {
         refresh: z.boolean().default(false),
       })
       .parse(await request.json());
-    const db = getStore(),
-      session = await getSession();
-    return NextResponse.json({
-      explanation: await createExplanation(
-        db,
-        session,
-        listingId,
-        recipientId,
-        priority,
-        refresh,
-      ),
-    });
+    const session = await getSession();
+    const explanation = await withJudgeStore(
+      (db) =>
+        createExplanation(
+          db,
+          session,
+          listingId,
+          recipientId,
+          priority,
+          refresh,
+        ),
+      { write: true },
+    );
+    return NextResponse.json({ explanation });
   } catch (error) {
     return apiError(error);
   }

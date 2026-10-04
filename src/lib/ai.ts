@@ -11,6 +11,8 @@ const explanationSchema = z.object({
   uncertainties: z.array(z.string()),
 });
 export function aiConfigured() {
+  // The public sample sandbox uses rules explanations; no open-ended API spend.
+  if (process.env.NILE_JUDGE_DEMO === "1") return false;
   const model = process.env.OPENAI_MODEL?.trim();
   return Boolean(
     process.env.OPENAI_API_KEY?.trim() &&

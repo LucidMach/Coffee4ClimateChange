@@ -432,7 +432,10 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
           </button>
         </div>
         <span className="local-label">
-          <i /> LOCAL DEMO
+          <i />{" "}
+          {data.storage === "hosted-isolated-demo"
+            ? "JUDGE DEMO"
+            : "LOCAL DEMO"}
         </span>
         <button
           className="masthead-help"
@@ -1043,7 +1046,7 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
                       <ShieldCheck size={18} />
                       <span>
                         Demo role switching shows both sides of the transaction.
-                        This is a local test workspace; account authentication
+                        This is a sample test workspace; account authentication
                         and real payments are future connections.
                       </span>
                     </div>
@@ -1085,7 +1088,7 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
                             <p>Recorded weights, never listing intentions.</p>
                           </div>
                           <span className="badge sample">
-                            Local demo records
+                            Sample demo records
                           </span>
                         </div>
                         <ImpactChart data={data.metrics.weekly} />
@@ -1297,7 +1300,7 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
             Good coffee. More life.
             <br />
             <span>
-              Melbourne · AUD · Local demo with sample businesses & offers
+              Melbourne · AUD · Sample businesses & offers · Demo only
             </span>
           </p>
           <button onClick={() => setGuide(true)}>
@@ -2065,9 +2068,7 @@ function Connections({ data }: { data: Bootstrap }) {
     try {
       setHealth(await request<BackendHealth>("/api/health"));
     } catch {
-      setError(
-        "Backend status is unavailable. Check that the local server is running.",
-      );
+      setError("Backend status is unavailable. Please try again.");
     } finally {
       setChecking(false);
     }
@@ -2078,8 +2079,10 @@ function Connections({ data }: { data: Bootstrap }) {
         <ShieldCheck size={18} />
         <span>
           {health
-            ? `Local database ready · ${health.ai.quota.remaining}/${health.ai.quota.limit} model requests remaining today`
-            : "Checking local backend…"}
+            ? health.storage === "hosted-isolated-demo"
+              ? "Private sample workspace ready · Rules explanations"
+              : `Local database ready · ${health.ai.quota.remaining}/${health.ai.quota.limit} model requests remaining today`
+            : "Checking backend…"}
         </span>
         <Button variant="secondary" onClick={refreshHealth} disabled={checking}>
           {checking ? "Checking…" : "Check backend"}
@@ -2107,8 +2110,9 @@ function Connections({ data }: { data: Bootstrap }) {
           </p>
           <code>OPENAI_API_KEY + OPENAI_MODEL</code>
           <p className="fine-print">
-            Server-only settings. Up to 30 requests/day in this demo. Only runs
-            when you click “Explain this match”.{" "}
+            {data.storage === "hosted-isolated-demo"
+              ? "The public sample demo uses rules explanations; live model calls are disabled. "
+              : "Server-only settings. Up to 30 requests/day. Runs when you click Explain this match. "}
             {data.ai.configured
               ? "A configured key does not guarantee model access; failures fall back visibly."
               : "No key configured; rules explanations work now."}
@@ -2129,33 +2133,45 @@ function Connections({ data }: { data: Bootstrap }) {
                 : ""}
             </p>
           )}
-          <details>
-            <summary>Connect your API key</summary>
-            <p className="fine-print">
-              Run <code>npm run setup:local</code>, add your key to{" "}
-              <code>.env.local</code> and restart the server. The default model
-              is GPT-4.1 mini; change it if your API project uses another
-              supported model. Run{" "}
-              <code>npm run backend:check -- --live-ai</code> for a model check,
-              or use “Explain this match”. A live check can use API credit. Keys
-              stay on the server.
-            </p>
-          </details>
+          {data.storage !== "hosted-isolated-demo" && (
+            <details>
+              <summary>Connect your API key</summary>
+              <p className="fine-print">
+                Run <code>npm run setup:local</code>, add your key to{" "}
+                <code>.env.local</code> and restart the server. The default
+                model is GPT-4.1 mini; change it if your API project uses
+                another supported model. Run{" "}
+                <code>npm run backend:check -- --live-ai</code> for a model
+                check, or use “Explain this match”. A live check can use API
+                credit. Keys stay on the server.
+              </p>
+            </details>
+          )}
         </article>
         <article className="panel connection">
           <div className="connection-top">
             <Columns3 size={24} />
-            <span className="badge ready">Working locally</span>
+            <span className="badge ready">
+              {data.storage === "hosted-isolated-demo"
+                ? "Hosted sample demo"
+                : "Working locally"}
+            </span>
           </div>
           <h2>Saved data</h2>
           <p>
-            SQLite stores listings, reservations, receipts and use reports
-            across refreshes and server restarts.
+            {data.storage === "hosted-isolated-demo"
+              ? "Your browser has a separate sample workspace. Changes are saved privately; other judges have their own data."
+              : "SQLite stores listings, reservations, receipts and use reports across refreshes and server restarts."}
           </p>
-          <code>.nile/demo.sqlite</code>
+          <code>
+            {data.storage === "hosted-isolated-demo"
+              ? "Private demo storage"
+              : ".nile/demo.sqlite"}
+          </code>
           <p className="fine-print">
-            Local fallback. Supabase storage and account authentication must be
-            connected before a cloud launch.
+            {data.storage === "hosted-isolated-demo"
+              ? "Sample data only. Browser access expires after seven days; this does not delete stored records. This is not a business account. Avoid personal information."
+              : "Local fallback. Supabase storage and account authentication must be connected before a real business launch."}
           </p>
           <p className="fine-print">
             Supabase schema and organization access policies are prepared in{" "}

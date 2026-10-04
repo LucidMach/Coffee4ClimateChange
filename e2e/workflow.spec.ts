@@ -369,6 +369,18 @@ test("mobile navigation and modal remain usable without horizontal overflow", as
 test("coffee animates without playback controls and respects reduced motion", async ({
   page,
 }) => {
+  // This animation check is independent of the optional Python service. The
+  // predictor's success and offline responses have dedicated browser checks.
+  await page.route("**/api/coffee-quality", (route) =>
+    route.fulfill({
+      json: {
+        options: {},
+        bounds: {},
+        drivers: [],
+        validation: { mae: 0.33, r2: 0.94 },
+      },
+    }),
+  );
   const runtimeErrors: string[] = [];
   page.on("pageerror", (error) => runtimeErrors.push(error.message));
   page.on("console", (message) => {

@@ -32,7 +32,7 @@ export type SavedExplanation = Explanation & {
 };
 export type BackendHealth = {
   status: "ready";
-  storage: "local-sqlite";
+  storage: "local-sqlite" | "hosted-isolated-demo";
   authentication: "demo-workspaces";
   ai: {
     configured: boolean;

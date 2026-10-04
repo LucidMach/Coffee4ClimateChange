@@ -245,7 +245,7 @@ export type Bootstrap = {
   metrics: Metrics;
   session: Session;
   ai: { configured: boolean; model: string | null };
-  storage: "local-sqlite";
+  storage: "local-sqlite" | "hosted-isolated-demo";
 };
 
 export function money(n: number | null) {

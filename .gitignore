@@ -9,3 +9,4 @@ playwright-report/
 .vercel/
 output/
 .DS_Store
+.vercel

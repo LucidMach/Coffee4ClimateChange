@@ -18,15 +18,15 @@ The team reports **four cafe interviews**: grounds in bins, occasional surplus b
 
 Nile checks material, condition, quantity, freshness, packaging, recipient capacity and pickup timing before ranking compatible options. Net benefit is sale revenue plus documented avoided disposal costs, minus extra handling and collection costs. Missing inputs stay visible; unconfirmed prospects cannot be booked.
 
-Two local demo pathways work end to end: **grounds to a sample mushroom grower or compost processor**, and **usable surplus roasted beans to a sample cafe**. Chaff, pulp and husks remain the wider vision; recipients and processing requirements need validation.
+Two demo pathways work end to end: **grounds to a sample mushroom grower or compost processor**, and **usable surplus roasted beans to a sample cafe**. Chaff, pulp and husks remain the wider vision; recipients and processing requirements need validation.
 
 A shared brief covers preparation, containers, contact, access and pickup time. The cafe marks its batch ready and the recipient accepts the current brief; revisions need renewed approval. Atomic reservations prevent double allocation. The recipient records accepted weight, the supplier confirms or disputes it, and use is reported separately. **30 kg proposed, 27 kg accepted and 25 kg reported used are distinct quantities.** Repeat listings reduce setup effort.
 
 ## How we built it
 
-The local prototype uses Next.js, React, TypeScript, Tailwind CSS, Zod-validated routes and SQLite transactions. An optional OpenAI Responses API adapter explains validated matches; rules retain control of eligibility, economics and bookings. A local key is present; live access remains unverified. No app model calls were made for this update. A labelled rules fallback is available. Supabase schema/access policies are prepared and locally tested; hosted authentication and storage are unconnected.
+The prototype uses Next.js, React, TypeScript, Tailwind CSS, Zod and SQLite. The public judge demo saves private browser workspaces in Vercel Blob; a Python function serves the trained quality model. OpenAI explanations are optional locally; public explanations use labelled rules. Eligibility, prices and bookings remain deterministic. Supabase schema/access policies are prepared and locally tested; hosted Supabase and real account authentication remain unconnected.
 
-Documented checks include 48 unit/database and 13 browser/API tests of workflows, reservations, receipts, mobile access and AI fallback.
+Documented checks include 72 unit/database/API and 15 local browser/API tests, plus two hosted checks of workflows, reservations, receipts, mobile access and AI fallback.
 
 ## A practical adoption test
 

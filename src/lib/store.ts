@@ -422,4 +422,3 @@ export function getStore() {
   );
   return globalStore.nileStore;
 }
-

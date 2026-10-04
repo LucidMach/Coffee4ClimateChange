@@ -44,7 +44,7 @@ To retrain: `python train.py` (downloads the CSV once into `ml_service/data/`, w
 `ml_service`, Docker runtime. The platform sets `PORT`. Check `/health` returns `"status": "ok"`.
 
 **Nile:** set `COFFEE_ML_API_URL=https://<service>` (and optionally `COFFEE_ML_TIMEOUT_MS`)
-in the hosting environment. Note the README: Nile's SQLite storage does not run on Vercel yet.
+in the hosting environment. For the same-project Vercel Python function, leave `COFFEE_ML_API_URL` unset and follow [hosted-quality-model.md](hosted-quality-model.md). Public sample storage is described in [judge-deployment.md](judge-deployment.md).
 
 Free tiers sleep when idle. Open `/health` a minute before a demo; the panel also tells
 users when the service is waking.
