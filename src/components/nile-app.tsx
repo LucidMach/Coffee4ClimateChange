@@ -52,7 +52,7 @@ import {
 } from "@/lib/domain";
 import { compatiblePools, netValue } from "@/lib/engine";
 import { SUPPLIERS } from "@/lib/fixtures";
-import type { Explanation } from "@/lib/ai";
+import type { SavedExplanation, BackendHealth } from "@/lib/ai-record";
 import { Button } from "./ui/button";
 import { Sheet } from "./sheet";
 import { ListingForm } from "./listing-form";
@@ -161,7 +161,7 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
     [selectedId, setSelectedId] = useState<string | null>(null);
   const [matches, setMatches] = useState<Match[] | null>(null),
     [priority, setPriority] = useState<Priority>("balanced");
-  const [explanation, setExplanation] = useState<Explanation | null>(null),
+  const [explanation, setExplanation] = useState<SavedExplanation | null>(null),
     [busy, setBusy] = useState<string | null>(null),
     [toast, setToast] = useState("");
   const [error, setError] = useState(""),
@@ -341,9 +341,9 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
     if (!selected) return;
     setBusy(`explain-${match.recipient.id}`);
     try {
-      const result = await request<{ explanation: Explanation }>(
+      const result = await request<{ explanation: SavedExplanation }>(
         "/api/explain",
-        { listingId: selected.id, recipientId: match.recipient.id },
+        { listingId: selected.id, recipientId: match.recipient.id, priority },
       );
       setExplanation(result.explanation);
     } catch (e) {
@@ -2041,8 +2041,53 @@ function HandoverCard({
   );
 }
 function Connections({ data }: { data: Bootstrap }) {
+  const [health, setHealth] = useState<BackendHealth | null>(null);
+  const [checking, setChecking] = useState(false);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/health", { signal: controller.signal, cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Backend status is unavailable.");
+        setHealth(await response.json());
+      })
+      .catch((failure) => {
+        if (failure.name !== "AbortError")
+          setError("Backend status is unavailable.");
+      });
+    return () => controller.abort();
+  }, []);
+  async function refreshHealth() {
+    setChecking(true);
+    setError("");
+    try {
+      setHealth(await request<BackendHealth>("/api/health"));
+    } catch {
+      setError(
+        "Backend status is unavailable. Check that the local server is running.",
+      );
+    } finally {
+      setChecking(false);
+    }
+  }
   return (
     <>
+      <section className="note" aria-label="Backend connection status">
+        <ShieldCheck size={18} />
+        <span>
+          {health
+            ? `Local database ready · ${health.ai.quota.remaining}/${health.ai.quota.limit} model requests remaining today`
+            : "Checking local backend…"}
+        </span>
+        <Button variant="secondary" onClick={refreshHealth} disabled={checking}>
+          {checking ? "Checking…" : "Check backend"}
+        </Button>
+      </section>
+      {error && (
+        <p className="error" role="alert">
+          {error}
+        </p>
+      )}
       <div className="connection-grid">
         <article className="panel connection">
           <div className="connection-top">
@@ -2066,6 +2111,34 @@ function Connections({ data }: { data: Bootstrap }) {
               ? "A configured key does not guarantee model access; failures fall back visibly."
               : "No key configured; rules explanations work now."}
           </p>
+          {health?.ai.model && (
+            <p className="fine-print">Configured model: {health.ai.model}</p>
+          )}
+          {health?.ai.lastAttempt && (
+            <p className="fine-print">
+              Last explanation:{" "}
+              {health.ai.lastAttempt.mode === "openai"
+                ? "OpenAI response recorded"
+                : "rules fallback"}{" "}
+              · {dateTime(health.ai.lastAttempt.createdAt)}.
+              {health.ai.lastAttempt.failureCode &&
+              health.ai.lastAttempt.failureCode !== "not_configured"
+                ? ` Setup check: ${health.ai.lastAttempt.failureCode.replaceAll("_", " ")}.`
+                : ""}
+            </p>
+          )}
+          <details>
+            <summary>Connect your API key</summary>
+            <p className="fine-print">
+              Run <code>npm run setup:local</code>, add your key to{" "}
+              <code>.env.local</code> and restart the server. The default model
+              is GPT-4.1 mini; change it if your API project uses another
+              supported model. Run{" "}
+              <code>npm run backend:check -- --live-ai</code> for a model check,
+              or use “Explain this match”. A live check can use API credit. Keys
+              stay on the server.
+            </p>
+          </details>
         </article>
         <article className="panel connection">
           <div className="connection-top">
@@ -2081,6 +2154,12 @@ function Connections({ data }: { data: Bootstrap }) {
           <p className="fine-print">
             Local fallback. Supabase storage and account authentication must be
             connected before a cloud launch.
+          </p>
+          <p className="fine-print">
+            Supabase schema and organization access policies are prepared in{" "}
+            <code>supabase/migrations</code>. No project is connected yet.
+            Follow <code>docs/backend-setup.md</code> when your team creates
+            one.
           </p>
         </article>
         <article className="panel connection">

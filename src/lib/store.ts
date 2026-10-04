@@ -2,6 +2,7 @@ import { DatabaseSync } from "node:sqlite";
 import { mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { randomUUID } from "node:crypto";
+import type { SavedExplanation } from "./ai-record";
 import { RECIPIENTS, seedListings } from "./fixtures";
 import { matchListing } from "./engine";
 import type {
@@ -31,7 +32,7 @@ export class NileStore {
     if (path !== ":memory:") mkdirSync(dirname(path), { recursive: true });
     this.db = new DatabaseSync(path);
     this.db.exec(
-      "PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000; PRAGMA journal_mode = WAL; CREATE TABLE IF NOT EXISTS listings (id TEXT PRIMARY KEY, data TEXT NOT NULL); CREATE TABLE IF NOT EXISTS transfers (id TEXT PRIMARY KEY, listing_id TEXT NOT NULL REFERENCES listings(id), data TEXT NOT NULL); CREATE TABLE IF NOT EXISTS ai_calls (id TEXT PRIMARY KEY, created_at TEXT NOT NULL);",
+      "PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000; PRAGMA journal_mode = WAL; CREATE TABLE IF NOT EXISTS listings (id TEXT PRIMARY KEY, data TEXT NOT NULL); CREATE TABLE IF NOT EXISTS transfers (id TEXT PRIMARY KEY, listing_id TEXT NOT NULL REFERENCES listings(id), data TEXT NOT NULL); CREATE TABLE IF NOT EXISTS ai_calls (id TEXT PRIMARY KEY, created_at TEXT NOT NULL); CREATE TABLE IF NOT EXISTS ai_generations (id TEXT PRIMARY KEY, listing_id TEXT NOT NULL REFERENCES listings(id), cache_key TEXT NOT NULL, created_at TEXT NOT NULL, data TEXT NOT NULL); CREATE INDEX IF NOT EXISTS ai_generation_cache ON ai_generations(cache_key, created_at);",
     );
     const count = this.db
       .prepare("SELECT COUNT(*) AS n FROM listings")
@@ -333,6 +334,61 @@ export class NileStore {
         .run(JSON.stringify(t), id);
       return t;
     });
+  }
+  aiUsage() {
+    const start = new Date().toISOString().slice(0, 10);
+    const used = (
+      this.db
+        .prepare("SELECT COUNT(*) AS n FROM ai_calls WHERE created_at >= ?")
+        .get(start) as { n: number }
+    ).n;
+    return {
+      used,
+      limit: 30,
+      remaining: Math.max(0, 30 - used),
+      resetAt: new Date(
+        Date.parse(`${start}T00:00:00Z`) + 86400000,
+      ).toISOString(),
+    };
+  }
+  saveExplanation(record: SavedExplanation, cacheKey: string) {
+    this.db
+      .prepare(
+        "INSERT INTO ai_generations(id, listing_id, cache_key, created_at, data) VALUES (?, ?, ?, ?, ?)",
+      )
+      .run(
+        record.id,
+        record.listingId,
+        cacheKey,
+        record.createdAt,
+        JSON.stringify(record),
+      );
+    return record;
+  }
+  explanation(id: string) {
+    const row = this.db
+      .prepare("SELECT data FROM ai_generations WHERE id = ?")
+      .get(id) as { data: string } | undefined;
+    return row ? (JSON.parse(row.data) as SavedExplanation) : null;
+  }
+  cachedExplanation(cacheKey: string) {
+    const since = new Date(Date.now() - 5 * 60000).toISOString();
+    const row = this.db
+      .prepare(
+        "SELECT data FROM ai_generations WHERE cache_key = ? AND created_at >= ? AND json_extract(data, '$.mode') = 'openai' ORDER BY rowid DESC LIMIT 1",
+      )
+      .get(cacheKey, since) as { data: string } | undefined;
+    return row
+      ? { ...(JSON.parse(row.data) as SavedExplanation), cached: true }
+      : null;
+  }
+  latestExplanation(supplierId: string) {
+    const row = this.db
+      .prepare(
+        "SELECT data FROM ai_generations WHERE json_extract(data, '$.supplierId') = ? ORDER BY rowid DESC LIMIT 1",
+      )
+      .get(supplierId) as { data: string } | undefined;
+    return row ? (JSON.parse(row.data) as SavedExplanation) : null;
   }
   claimAiCall() {
     this.transaction(() => {

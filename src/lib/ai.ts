@@ -2,24 +2,30 @@ import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
 import { z } from "zod";
 import { MATERIALS, money, type Listing, type Match } from "./domain";
+import type { Explanation, AiFailure } from "./ai-record";
+export type { Explanation } from "./ai-record";
 
 const explanationSchema = z.object({
   summary: z.string(),
   nextSteps: z.array(z.string()),
   uncertainties: z.array(z.string()),
 });
-export type Explanation = z.infer<typeof explanationSchema> & {
-  mode: "openai" | "rules";
-  notice: string;
-};
 export function aiConfigured() {
+  const model = process.env.OPENAI_MODEL?.trim();
   return Boolean(
-    process.env.OPENAI_API_KEY?.trim() && process.env.OPENAI_MODEL?.trim(),
+    process.env.OPENAI_API_KEY?.trim() &&
+    model &&
+    !model.startsWith("sk-") &&
+    /^[a-zA-Z0-9][a-zA-Z0-9._:-]{0,79}$/.test(model),
   );
 }
 export function ruleExplanation(listing: Listing, match: Match): Explanation {
   return {
     mode: "rules",
+    model: null,
+    responseId: null,
+    usage: null,
+    failureCode: "not_configured",
     notice: "Rules explanation · no model call",
     summary: `${match.recipient.name} ${match.eligibility === "eligible" ? "fits" : "needs review for"} this ${MATERIALS[listing.material].short.toLowerCase()} batch. ${match.reasons.join(" ")} Net benefit under the sample terms: ${money(match.netBenefitAud)}.`,
     nextSteps:
@@ -60,12 +66,12 @@ export async function explainMatch(
   claim();
   try {
     const client = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+      apiKey: process.env.OPENAI_API_KEY!.trim(),
       maxRetries: 0,
       timeout: 12000,
     });
     const response = await client.responses.parse({
-      model: process.env.OPENAI_MODEL!,
+      model: process.env.OPENAI_MODEL!.trim(),
       store: false,
       max_output_tokens: 900,
       input: [
@@ -89,18 +95,60 @@ export async function explainMatch(
       ],
       text: { format: zodTextFormat(explanationSchema, "match_explanation") },
     });
-    if (!response.output_parsed) throw new Error("No structured output");
+    if (response.status !== "completed" || !response.output_parsed) {
+      return failedExplanation(fallback, "invalid_response");
+    }
     return {
       ...explanationSchema.parse(response.output_parsed),
       mode: "openai",
+      model: response.model,
+      responseId: response.id,
+      usage: response.usage
+        ? {
+            inputTokens: response.usage.input_tokens,
+            outputTokens: response.usage.output_tokens,
+            totalTokens: response.usage.total_tokens,
+          }
+        : null,
+      failureCode: null,
       notice:
         "OpenAI explanation · booking remains controlled by validated rules",
     };
-  } catch {
-    return {
-      ...fallback,
-      notice:
-        "OpenAI unavailable or returned no valid response. Showing the rules explanation.",
-    };
+  } catch (error) {
+    const code: AiFailure =
+      error instanceof OpenAI.APIConnectionTimeoutError
+        ? "timeout"
+        : error instanceof OpenAI.APIError && error.status === 401
+          ? "credentials"
+          : error instanceof OpenAI.APIError &&
+              [403, 404].includes(error.status ?? 0)
+            ? "model_access"
+            : error instanceof OpenAI.APIError && error.status === 429
+              ? "rate_limit"
+              : error instanceof z.ZodError
+                ? "invalid_response"
+                : "provider_error";
+    return failedExplanation(fallback, code);
   }
+}
+
+function failedExplanation(
+  fallback: Explanation,
+  code: AiFailure,
+): Explanation {
+  const reasons: Partial<Record<AiFailure, string>> = {
+    credentials: "OpenAI rejected the API credentials. Check the server key.",
+    model_access:
+      "The API project cannot access this model. Check OPENAI_MODEL and permissions.",
+    rate_limit:
+      "OpenAI quota or rate limit was reached. Check API billing and limits.",
+    timeout: "OpenAI did not respond within 12 seconds.",
+    invalid_response:
+      "OpenAI returned no completed, valid structured explanation.",
+  };
+  return {
+    ...fallback,
+    failureCode: code,
+    notice: `${reasons[code] ?? "OpenAI is unavailable."} Showing the rules explanation.`,
+  };
 }

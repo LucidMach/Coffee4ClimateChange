@@ -59,6 +59,27 @@ describe("multi-supplier test workspace", () => {
         businessId: "c-demo",
       });
       old.claimAiCall();
+      old.saveExplanation(
+        {
+          id: "old-explanation",
+          listingId: "l-grounds",
+          supplierId: "c-demo",
+          recipientId: "r-mushroom",
+          requestedModel: null,
+          summary: "Old test explanation",
+          nextSteps: [],
+          uncertainties: [],
+          mode: "rules",
+          notice: "Test fixture",
+          model: null,
+          responseId: null,
+          usage: null,
+          failureCode: "not_configured",
+          createdAt: new Date().toISOString(),
+          cached: false,
+        },
+        "old-cache-key",
+      );
       // Keep this WAL connection open, as the local dev server will be during reset.
       const output = execFileSync(
         process.execPath,
@@ -77,6 +98,7 @@ describe("multi-supplier test workspace", () => {
       expect(result.availableKg).toBe(1200);
       expect(old.listings()).toHaveLength(14);
       expect(old.transfers()).toHaveLength(0);
+      expect(old.explanation("old-explanation")).toBeNull();
       expect(
         old.db.prepare("SELECT COUNT(*) AS n FROM ai_calls").get()?.n,
       ).toBe(1);
@@ -87,6 +109,9 @@ describe("multi-supplier test workspace", () => {
         ).toBe(3);
         expect(
           snapshot.prepare("SELECT COUNT(*) AS n FROM transfers").get()?.n,
+        ).toBe(1);
+        expect(
+          snapshot.prepare("SELECT COUNT(*) AS n FROM ai_generations").get()?.n,
         ).toBe(1);
       } finally {
         snapshot.close();

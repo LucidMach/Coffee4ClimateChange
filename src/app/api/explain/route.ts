@@ -1,30 +1,30 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getStore, DomainError } from "@/lib/store";
-import { RECIPIENTS } from "@/lib/fixtures";
-import { matchListing } from "@/lib/engine";
-import { explainMatch } from "@/lib/ai";
+import { getStore } from "@/lib/store";
+import { createExplanation } from "@/lib/explanation-service";
 import { apiError, getSession, guardMutation } from "@/lib/server";
 export async function POST(request: Request) {
   try {
     guardMutation(request);
-    const { listingId, recipientId } = z
-      .object({ listingId: z.string(), recipientId: z.string() })
+    const { listingId, recipientId, priority, refresh } = z
+      .object({
+        listingId: z.string().min(1).max(80),
+        recipientId: z.string().min(1).max(80),
+        priority: z.enum(["balanced", "value", "distance"]).default("balanced"),
+        refresh: z.boolean().default(false),
+      })
       .parse(await request.json());
     const db = getStore(),
-      listing = db.listing(listingId),
       session = await getSession();
-    if (session.role !== "cafe" || session.businessId !== listing.supplierId)
-      throw new DomainError(
-        "Open explanations from the supplier workspace.",
-        403,
-      );
-    const match = matchListing(listing, RECIPIENTS).find(
-      (m) => m.recipient.id === recipientId,
-    );
-    if (!match) throw new DomainError("Match not found.", 404);
     return NextResponse.json({
-      explanation: await explainMatch(listing, match, () => db.claimAiCall()),
+      explanation: await createExplanation(
+        db,
+        session,
+        listingId,
+        recipientId,
+        priority,
+        refresh,
+      ),
     });
   } catch (error) {
     return apiError(error);

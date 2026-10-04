@@ -49,6 +49,14 @@ try {
     );
     // Clear old test handovers before replacing their listings. Keep the AI call
     // ledger so a workspace reset cannot bypass the daily API request limit.
+    if (
+      db
+        .prepare(
+          "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'ai_generations'",
+        )
+        .get()
+    )
+      db.exec("DELETE FROM ai_generations;");
     db.exec("DELETE FROM transfers; DELETE FROM listings;");
     const insert = db.prepare("INSERT INTO listings(id, data) VALUES (?, ?)");
     for (const listing of listings)
