@@ -26,7 +26,7 @@ This backs up the current SQLite workspace to `.nile/backups/`, clears old listi
 
 Open **My materials → Supplier workspace** to switch between four cafés, a roaster and a regional mill. Each supplier sees its own listings and handovers. Recipient and network views browse the full network. Test grounds, surplus beans, chaff, pulp and husks; the mill is in Queensland so distance and collection arrangements need attention. Sample quantities do not imply recorded diversion, reuse or climate savings. For another local SQLite file, run the command with `NILE_DB_PATH` set to its path. Databases and backups are excluded from GitHub.
 
-## Explore the redesigned experience
+## Explore the experience
 
 Start with the upper coffee story panel, sized to fit the opening screen. A coffee bean revolves around a thin orbit and continuously becomes a latte, grounds and a bean again in a 16-second loop. The larger animation fills the space above the metrics without a playback bar. Scrolling blends the current phase into grounds and carries them out of the green panel toward the workspace circles. Scroll back to reverse the fall and resume the loop. Reduced motion disables autoplay and scroll-driven motion.
 
@@ -119,8 +119,6 @@ No buyer outreach, payment, smart scale connection, ABN check, satellite analysi
 See [architecture](docs/architecture.md), [adoption tools](docs/adoption-tools.md), [demo script](docs/demo-script.md), and [build status](docs/build-status.md).
 
 ## Hackathon submission and tools disclosure
-
-See the [submission pack](docs/submission.md), [paste-ready description](docs/submission-description.md), [two-minute recording script](docs/submission-video-script.md), [editable PowerPoint](output/pptx/Nile_Submission_Presentation_Coffee_Lifecycle.pptx) and [supporting PDF](output/pdf/Nile_Submission_Presentation_Coffee_Lifecycle.pdf). The required video URL is still missing; no project has been submitted or publicly deployed by this preparation.
 
 OpenAI Codex assisted with planning, research, writing, implementation, documentation and test development. The OpenAI SDK adapter is implemented but live model access is unverified; Supabase is a prepared SQL foundation. The [full third-party disclosure](docs/third-party-disclosure.md) lists the application, testing and PDF tools with their actual status.
 
