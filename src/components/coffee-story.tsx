@@ -458,7 +458,11 @@ export function CoffeeStory({
                   strokeLinecap="round"
                 />
               </g>
-              <g className="journey-latte" opacity={latteOpacity}>
+              <g
+                className="journey-latte"
+                opacity={latteOpacity}
+                transform="scale(0.7)"
+              >
                 <Latte />
               </g>
               <g
