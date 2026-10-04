@@ -1,4 +1,64 @@
-import type { Listing, Recipient } from "./domain";
+import type { Listing, ListingInput, Recipient } from "./domain";
+
+// Fictional supplier identities also allow the local demo to exercise ownership.
+export type Supplier = {
+  id: string;
+  name: string;
+  origin: ListingInput["origin"];
+  location: string;
+  lat: number;
+  lng: number;
+};
+export const SUPPLIERS: Supplier[] = [
+  {
+    id: "c-demo",
+    name: "Common Ground Café",
+    origin: "cafe",
+    location: "Fitzroy, Melbourne",
+    lat: -37.798,
+    lng: 144.979,
+  },
+  {
+    id: "c-river",
+    name: "Riverbend Café",
+    origin: "cafe",
+    location: "Carlton, Melbourne",
+    lat: -37.798,
+    lng: 144.967,
+  },
+  {
+    id: "c-laneway",
+    name: "Laneway Espresso",
+    origin: "cafe",
+    location: "Brunswick, Melbourne",
+    lat: -37.767,
+    lng: 144.972,
+  },
+  {
+    id: "c-station",
+    name: "Station Street Coffee",
+    origin: "cafe",
+    location: "Preston, Melbourne",
+    lat: -37.738,
+    lng: 145.004,
+  },
+  {
+    id: "s-roaster",
+    name: "Ember Roast",
+    origin: "roaster",
+    location: "Collingwood, Melbourne",
+    lat: -37.805,
+    lng: 144.989,
+  },
+  {
+    id: "s-mill",
+    name: "Highlands Coffee Mill",
+    origin: "farm_mill",
+    location: "Cairns, Queensland",
+    lat: -16.918,
+    lng: 145.778,
+  },
+];
 
 // Invented businesses, requirements and quotes for a reproducible demo. Not live demand.
 export const RECIPIENTS: Recipient[] = [
@@ -187,5 +247,145 @@ export function seedListings(now = new Date()): Listing[] {
       notes:
         "Demo future batch. Available window differs from this morning’s batch; do not silently pool them.",
     },
+  ];
+}
+
+/**
+ * Optional larger QA scenario, loaded explicitly by npm run demo:reset.
+ * Weights and business identities are invented; pickup windows start afresh on
+ * each reset. Regional mill material deliberately tests distance and origin.
+ */
+export function seedTestListings(now = new Date()): Listing[] {
+  const basic = seedListings(now);
+  const extra: {
+    id: string;
+    supplierId: string;
+    title: string;
+    material: Listing["material"];
+    kg: number;
+    future?: boolean;
+  }[] = [
+    {
+      id: "test-river-grounds",
+      supplierId: "c-river",
+      title: "Riverbend chilled grounds",
+      material: "grounds",
+      kg: 80,
+    },
+    {
+      id: "test-river-beans",
+      supplierId: "c-river",
+      title: "Riverbend sealed surplus beans",
+      material: "beans",
+      kg: 12,
+    },
+    {
+      id: "test-laneway-grounds",
+      supplierId: "c-laneway",
+      title: "Laneway chilled grounds",
+      material: "grounds",
+      kg: 65,
+    },
+    {
+      id: "test-laneway-beans",
+      supplierId: "c-laneway",
+      title: "Laneway surplus espresso beans",
+      material: "beans",
+      kg: 18,
+    },
+    {
+      id: "test-station-grounds",
+      supplierId: "c-station",
+      title: "Station Street chilled grounds",
+      material: "grounds",
+      kg: 90,
+    },
+    {
+      id: "test-station-beans",
+      supplierId: "c-station",
+      title: "Station Street sealed surplus beans",
+      material: "beans",
+      kg: 20,
+    },
+    {
+      id: "test-roaster-chaff",
+      supplierId: "s-roaster",
+      title: "Ember Roast dry chaff",
+      material: "chaff",
+      kg: 140,
+    },
+    {
+      id: "test-roaster-beans",
+      supplierId: "s-roaster",
+      title: "Ember Roast surplus labelled beans",
+      material: "beans",
+      kg: 15,
+    },
+    {
+      id: "test-roaster-future",
+      supplierId: "s-roaster",
+      title: "Tomorrow’s Ember Roast chaff",
+      material: "chaff",
+      kg: 100,
+      future: true,
+    },
+    {
+      id: "test-mill-pulp",
+      supplierId: "s-mill",
+      title: "Highlands mill coffee cherry pulp",
+      material: "pulp",
+      kg: 350,
+    },
+    {
+      id: "test-mill-husks",
+      supplierId: "s-mill",
+      title: "Highlands mill dry coffee husks",
+      material: "husks",
+      kg: 250,
+    },
+  ];
+  const time = (hours: number) =>
+    new Date(now.getTime() + hours * 3600000).toISOString();
+  return [
+    ...basic,
+    ...extra.map((batch): Listing => {
+      const supplier = SUPPLIERS.find((s) => s.id === batch.supplierId)!;
+      const beans = batch.material === "beans";
+      return {
+        ...basic[beans ? 1 : 0],
+        id: batch.id,
+        supplierId: supplier.id,
+        title: batch.title,
+        material: batch.material,
+        origin: supplier.origin,
+        location: supplier.location,
+        lat: supplier.lat,
+        lng: supplier.lng,
+        quantityKg: batch.kg,
+        availableKg: batch.kg,
+        collectedAt: time(batch.future ? 18 : -2),
+        availableAt: time(batch.future ? 20 : -0.1),
+        expiresAt: time(
+          batch.future
+            ? 48
+            : beans
+              ? 48
+              : batch.material === "grounds"
+                ? 10
+                : 24,
+        ),
+        storage: beans
+          ? "dry_sealed"
+          : batch.material === "grounds" || batch.material === "pulp"
+            ? "chilled"
+            : "ambient",
+        packaging: beans ? "sealed_labelled" : "not_applicable",
+        roastDate: beans ? basic[1].roastDate : null,
+        bestBefore: beans ? basic[1].bestBefore : null,
+        // Regional pickup costs remain unknown until a collection quote exists.
+        supplierTransportAud: supplier.origin === "farm_mill" ? null : 0,
+        notes: `Fictional test batch from ${supplier.name}. Sample weight and terms, not actual waste or confirmed reuse.`,
+      };
+    }),
   ];
 }
