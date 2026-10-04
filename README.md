@@ -55,9 +55,21 @@ Click a circle to reveal its working tab. The selector stays visible while brows
 - Saved, supplier-scoped explanations with actual provider token usage, a five-minute answer cache and concurrent-click deduplication.
 - Backend connection status and a local CLI checker; Supabase SQL foundation with locally tested organization access rules.
 - Browser-only CSV purchase planner: daily bean usage or drink totals → weekday baseline → business goal, stock and safety buffer → suggested packs and AUD budget comparison. Forecasts are estimates; no automatic orders or realized savings claims.
+- Coffee quality estimate in Overview: a Python Random Forest (`ml_service/`) predicts total cup score from origin, cupping and green-bean grading inputs, behind a server-side `/api/coffee-quality` proxy. Needs the model service running; see [coffee quality model](docs/coffee-quality-model.md).
 - A downloadable Nile participation record from confirmed demo handovers and recipient-reported use. This is a scoped record, not COP31 accreditation or B Corp certification.
 
 The two complete demo pathways are **grounds → sample mushroom grower / compost processor** and **usable beans → sample café**. The other materials remain visible as the wider product vision; their real recipients and processing requirements need validation.
+
+## Run the coffee quality model
+
+```sh
+cd ml_service
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python app.py
+```
+
+The trained model is committed, so nothing downloads at runtime. Nile reads `COFFEE_ML_API_URL` (default `http://127.0.0.1:5001`). Without the service the Overview panel says it is offline and the rest of Nile works as before. Deployment and API details: [docs/coffee-quality-model.md](docs/coffee-quality-model.md).
 
 ## Connect OpenAI
 
@@ -91,6 +103,7 @@ npm test
 npm run build
 npx playwright install chromium
 npm run test:e2e
+(cd ml_service && python test_app.py)
 ```
 
 For an existing compatible Chrome installation, set `NILE_CHROME_PATH` to its executable for the E2E command. Tests deliberately clear OpenAI credentials and do not spend API credit. The production build uses Next.js's supported webpack compiler; Turbopack's build worker encountered local sandbox port restrictions during setup. The development server uses Turbopack.

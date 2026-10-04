@@ -60,6 +60,7 @@ import { Bean, CoffeeStory } from "./coffee-story";
 import { CoffeeMetrics } from "./coffee-metrics";
 import { CollectionBrief } from "./collection-brief";
 import { AdoptionPanel } from "./adoption-panel";
+import { CoffeeQualityPredictor } from "./coffee-quality-predictor";
 const PurchasePlanner = dynamic(() =>
   import("./purchase-planner").then((module) => module.PurchasePlanner),
 );
@@ -846,6 +847,7 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
                         onHandovers={() => navigate("handovers")}
                       />
                     )}
+                    <CoffeeQualityPredictor />
                     <div className="overview-list">
                       <section className="panel">
                         <div className="section-heading">
