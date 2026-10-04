@@ -11,8 +11,8 @@ Prepared for team review on 4 October 2026. The current build is local; no publi
 | Source code           | https://github.com/advita04/Nile/tree/codex/nile-initial-build                                                                                                   | Implementation branch; anonymous access previously returned HTTP 404 |
 | Video                 | Add a shareable URL after recording [the two-minute script](submission-video-script.md).                                                                         | **Required and missing**                                             |
 | Other link            | Optional: link the implementation branch or published documentation.                                                                                             | Use only material judges can access                                  |
-| Supporting PDF        | Attach [the updated supporting PDF](../output/pdf/Nile_Submission_Presentation_Updated_v3.pdf).                                                                  | 11 pages rendered and visually checked                               |
-| Editable presentation | [Updated PowerPoint deck](../output/pptx/Nile_Submission_Presentation_Updated_v3.pptx).                                                                          | Editable text/tables; final export checked                           |
+| Supporting PDF        | Attach [the updated supporting PDF](../output/pdf/Nile_Submission_Presentation_Coffee_Lifecycle.pdf).                                                            | 11 pages rendered and visually checked                               |
+| Editable presentation | [Updated PowerPoint deck](../output/pptx/Nile_Submission_Presentation_Coffee_Lifecycle.pptx).                                                                    | Editable text/tables; final export checked                           |
 
 ## Before submitting
 

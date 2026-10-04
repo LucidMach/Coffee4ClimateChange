@@ -107,7 +107,7 @@ See [architecture](docs/architecture.md), [adoption tools](docs/adoption-tools.m
 
 ## Hackathon submission and tools disclosure
 
-See the [submission pack](docs/submission.md), [paste-ready description](docs/submission-description.md), [two-minute recording script](docs/submission-video-script.md), [editable PowerPoint](output/pptx/Nile_Submission_Presentation_Updated_v3.pptx) and [supporting PDF](output/pdf/Nile_Submission_Presentation_Updated_v3.pdf). The required video URL is still missing; no project has been submitted or publicly deployed by this preparation.
+See the [submission pack](docs/submission.md), [paste-ready description](docs/submission-description.md), [two-minute recording script](docs/submission-video-script.md), [editable PowerPoint](output/pptx/Nile_Submission_Presentation_Coffee_Lifecycle.pptx) and [supporting PDF](output/pdf/Nile_Submission_Presentation_Coffee_Lifecycle.pdf). The required video URL is still missing; no project has been submitted or publicly deployed by this preparation.
 
 OpenAI Codex assisted with planning, research, writing, implementation, documentation and test development. The OpenAI SDK adapter is implemented but live model access is unverified; Supabase is a prepared SQL foundation. The [full third-party disclosure](docs/third-party-disclosure.md) lists the application, testing and PDF tools with their actual status.
 

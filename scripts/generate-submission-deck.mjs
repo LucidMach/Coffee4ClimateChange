@@ -5,14 +5,17 @@ import { pathToFileURL } from "node:url";
 import { Presentation, PresentationFile } from "@oai/artifact-tool";
 
 const ROOT = process.env.NILE_ROOT || process.cwd();
-const BUILD = path.join(ROOT, "output/build/submission-update");
+const BUILD = path.join(ROOT, "output/build/cover-restore");
 const SKILL = process.env.PRESENTATIONS_SKILL_DIR;
 const PYTHON = process.env.RUNTIME_PYTHON;
 if (!SKILL || !PYTHON)
   throw new Error("Set PRESENTATIONS_SKILL_DIR and RUNTIME_PYTHON.");
 const FINAL =
   process.env.NILE_PRESENTATION_OUTPUT ||
-  path.join(ROOT, "output/pptx/Nile_Submission_Presentation_Updated_v3.pptx");
+  path.join(
+    ROOT,
+    "output/pptx/Nile_Submission_Presentation_Coffee_Lifecycle.pptx",
+  );
 const C = {
   green: "#214535",
   cream: "#F4EFE5",
@@ -129,45 +132,96 @@ const RC = "https://reground.com.au/collection/circular-coffee/";
 const interviews =
   "Team-reported qualitative interviews with four cafes, supplied in conversation 4 October 2026. No transcripts, names, dates, weights or disposal audits supplied. Some cafes already have collection for agriculture. No direct quotations reproduced.";
 
-// Cover: native editable typography, preserving the established Nile palette.
+// Restore the user's original two-column cover. The orbit illustration is
+// reused from the earlier PDF; the headline, statistics and footer stay editable.
 {
   const s = deck.slides.add();
   slides.push(s);
   s.background.fill = C.green;
-  text(s, "nile.", 72, 58, 700, 130, 112, { serif: true, color: C.cream });
-  text(s, "Give coffee a next life.", 72, 244, 1136, 90, 62, {
-    serif: true,
+  text(s, "nile.", 60, 32, 500, 82, 64, { serif: true, color: C.cream });
+  text(s, "COFFEE INTO CLIMATE ACTION", 64, 127, 630, 28, 16, {
+    bold: true,
+    color: "#D4DABB",
+  });
+  text(s, "Give coffee\na next life.", 60, 182, 650, 156, 64, {
     color: C.cream,
   });
   text(
     s,
-    "An easier way for cafes to match leftover coffee with suitable recipients, compare costs and coordinate collection.",
+    "Surplus beans and coffee by-products.\nCompatible recipients. Clear value. Easier collection.",
+    64,
+    370,
+    660,
     76,
-    363,
-    1040,
-    108,
-    31,
+    23,
     { color: C.cream },
   );
-  text(s, "ZERO WASTE & METHANE REDUCTION", 76, 548, 1100, 29, 23, {
-    bold: true,
-    color: "#E8B68B",
+  s.shapes.add({
+    geometry: "roundRect",
+    position: { left: 67, top: 463, width: 607, height: 136 },
+    fill: "#2E5340",
+    borderRadius: 21,
+    line: { fill: "none", width: 0 },
   });
-  text(s, "GREEN INDUSTRIALISATION  +  AWARENESS", 76, 590, 1100, 28, 23, {
-    color: C.cream,
+  text(s, "~75,000 tonnes / year", 92, 484, 559, 52, 36, {
+    bold: true,
+    color: "#E2AE7E",
   });
   text(
     s,
-    "Climate Hack-tion  •  Working local prototype  •  4 October 2026",
-    76,
-    676,
-    1100,
-    22,
+    "Spent coffee grounds generated in Australia.\nRMIT estimate, 2023. Context, not Nile impact.",
+    93,
+    547,
+    550,
+    47,
     16,
     { color: C.cream },
   );
+  s.images.add({
+    blob: new Uint8Array(
+      await fs.readFile(
+        path.join(ROOT, "assets/presentation/coffee-lifecycle-reference.png"),
+      ),
+    ),
+    contentType: "image/png",
+    alt: "Original coffee life cycle: a bean becomes a latte, then spent grounds, around a thin orbit with orange arrows.",
+    position: { left: 747, top: 168, width: 462, height: 384 },
+    crop: { left: 0.6, top: 0.24, right: 0.075, bottom: 0.28 },
+    fit: "contain",
+  });
+  text(
+    s,
+    "One engine for coffee materials\nat different stages.",
+    780,
+    570,
+    428,
+    64,
+    23,
+    { color: C.cream },
+  );
+  text(
+    s,
+    "Zero Waste & Methane Reduction   /   Green Industrialisation   /   Awareness",
+    64,
+    636,
+    1136,
+    25,
+    16,
+    { color: "#D4DABB" },
+  );
+  text(
+    s,
+    "Source: RMIT, Coffee offers performance boost for concrete, 23 August 2023",
+    64,
+    677,
+    1080,
+    20,
+    12,
+    { color: "#CDD7BD" },
+  );
+  text(s, "1 / 11", 1158, 676, 60, 22, 14, { color: C.cream, align: "right" });
   s.speakerNotes.textFrame.setText(
-    "Three connected event priorities, one cafe-to-recipient workflow. Priority descriptions from user-supplied event brief. No affiliation, certification, achieved impact or cloud deployment is claimed.",
+    "Opening composition and bean/latte/grounds illustration restored from the original Nile_Submission_Presentation.pdf. The cropped original illustration is an image; other cover text and the context card are native editable objects. RMIT (23 August 2023), https://www.rmit.edu.au/news/all-news/2023/aug/coffee-concrete, estimates around 75,000 tonnes of grounds generated in Australia annually. This is dated context, not Nile impact. All three requested event priorities remain visible. Slides 2–11 retain the research, hypothetical scenarios and evidence boundaries from v3.",
   );
 }
 {
@@ -612,7 +666,7 @@ const interviews =
 }
 
 // Draft and final are separate, preserving a reproducible validated handoff.
-const candidate = path.join(BUILD, "candidate-v3.pptx");
+const candidate = path.join(BUILD, "candidate-lifecycle.pptx");
 await (await PresentationFile.exportPptx(deck)).save(candidate);
 await fs.writeFile(
   path.join(BUILD, "presentation.json"),
@@ -648,7 +702,7 @@ const result = await finalizePresentation({
   requiredNativeTableOwnerSlides: [6, 10],
   fontPolicy: { basis: "design", families: ["Arial", "Georgia"] },
   verifyArtifactToolImport: true,
-  receiptPath: path.join(BUILD, "validation-v3.json"),
+  receiptPath: path.join(BUILD, "validation-lifecycle.json"),
 });
 console.log(
   JSON.stringify(
