@@ -8,7 +8,9 @@ Core demo materials: spent grounds and surplus roasted beans. Chaff, pulp and hu
 
 An optional `npm run demo:reset` test scenario backs up the current local database, replaces listings and handovers with 14 fictional batches totalling 1,200 kg across six suppliers, and preserves the daily AI request ledger. The supplier selector scopes listings, launch shortcuts and handovers to the selected business. The standard three-batch seed remains the default for fresh checkouts and isolated tests.
 
-OpenAI has replaced Jev and Claude in the implementation. Its server-only structured explanation adapter is implemented, with a visibly labelled deterministic fallback. **No live API key/model is configured or tested.** No OpenAI credit has been spent by the tests.
+OpenAI has replaced Jev and Claude in the implementation. Its server-only structured explanation adapter now rechecks current match facts, caches identical successful answers, deduplicates concurrent requests and saves supplier-scoped explanations with actual token usage when available. Specific provider errors use sanitized rules fallbacks. Connections and `npm run backend:check` read configuration without a model call; `--live-ai` explicitly requests one. The default model is `gpt-4.1-mini`; **no live API key or model access is configured or tested.** No OpenAI credit has been spent. See [backend setup](backend-setup.md).
+
+The Supabase SQL foundation creates six tables with organization access policies and client writes disabled. The migration and access boundaries have been tested in local PGlite. **No Supabase project, hosted login or cloud repository is connected.** SQLite remains the working backend and existing data is preserved.
 
 ## Evidence states
 
@@ -21,13 +23,13 @@ OpenAI has replaced Jev and Claude in the implementation. Its server-only struct
 
 ## Remaining connections
 
-Supabase with account authentication and scoped storage; real recipient acceptance and quotes; exact-address routing; business lookup; optional measurement modules; reviewed impact factors; real payments and dispute resolution.
+OpenAI key and live model check; Supabase account authentication, repository adapter, transactional reservation/receipt RPCs and scoped photo storage; hosted policy verification; real recipient acceptance and quotes; exact-address routing; business lookup; optional measurement modules; reviewed impact factors; real payments and dispute resolution.
 
 The app is local and has not been deployed to Vercel. Ticket ownership and team assignments have not been changed by the build.
 
 ## Validation
 
-All 39 Vitest core tests and 11 Playwright browser/API tests pass on the current build. ESLint, TypeScript, formatting and the Next.js production build pass. Checks cover the sourced waste/methane illustration, independent café outreach target, 1–10% slider with half-percent steps and keyboard limits, gas-capture sensitivity and negative outcomes, separation from recorded savings, both material pathways, 30 kg proposed / 27 kg received / 25 kg reported used, saved listings after refresh, concurrent reservations, 390 px mobile navigation, continuous looping and scroll reversal. The adoption checks cover preparation before booking, stale revisions, reapproval before receipt, freshness at the chosen pickup time, preserved legacy receipts, reuse of pickup contact details, closed-day handling, CSV validation, sales-to-beans conversion, pack rounding, budget overruns, browser-only processing, cleared uploads on close and scoped participation exports. Tests run with OpenAI credentials disabled against isolated test data.
+All 48 Vitest unit/database tests and 13 Playwright browser/API tests pass on the current build. ESLint, TypeScript, formatting and the Next.js production build pass. Checks cover the sourced waste/methane illustration, independent café outreach target, 1–10% slider with half-percent steps and keyboard limits, gas-capture sensitivity and negative outcomes, separation from recorded savings, both material pathways, 30 kg proposed / 27 kg received / 25 kg reported used, saved listings after refresh, concurrent reservations, 390 px mobile navigation, continuous looping and scroll reversal. The adoption checks cover preparation before booking, stale revisions, reapproval before receipt, freshness at the chosen pickup time, preserved legacy receipts, reuse of pickup contact details, closed-day handling, CSV validation, sales-to-beans conversion, pack rounding, budget overruns, browser-only processing, cleared uploads on close and scoped participation exports. The backend checks cover completed and malformed model responses using mocks, sanitized credential failures, quota enforcement, cached/persisted explanations, current capacity, owner-only retrieval, non-spending connection checks and the actual Supabase migration/access policies in local PGlite. Tests use mocked or disabled OpenAI credentials against isolated data; hosted Supabase and live model access remain unverified.
 
 ## Visual redesign
 
