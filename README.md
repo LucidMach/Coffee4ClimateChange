@@ -104,3 +104,11 @@ Before a public pilot, connect Supabase Auth and an organization-scoped reposito
 No buyer outreach, payment, smart scale connection, ABN check, satellite analysis or live business discovery runs in this version. The original image/workbook/docx are planning references and are not modified by this build.
 
 See [architecture](docs/architecture.md), [adoption tools](docs/adoption-tools.md), [demo script](docs/demo-script.md), and [build status](docs/build-status.md).
+
+## Hackathon submission and tools disclosure
+
+See the [submission pack](docs/submission.md), [paste-ready description](docs/submission-description.md), [two-minute recording script](docs/submission-video-script.md) and [supporting PDF](output/pdf/Nile_Submission_Presentation.pdf). The required video URL is still missing; no project has been submitted or publicly deployed by this preparation.
+
+OpenAI Codex assisted with planning, research, writing, implementation, documentation and test development. The OpenAI SDK adapter is implemented but live model access is unverified; Supabase is a prepared SQL foundation. The [full third-party disclosure](docs/third-party-disclosure.md) lists the application, testing and PDF tools with their actual status.
+
+To regenerate the presentation, run `python3 scripts/generate-submission-pdf.py` with ReportLab installed. On macOS it uses the available Arial/Georgia fonts; other systems use the built-in Helvetica/Times fallback.

@@ -1,0 +1,37 @@
+# Third-party tools and AI disclosure
+
+This disclosure describes the Nile prototype and these submission materials as prepared on 4 October 2026. A planned integration is not described as an active service.
+
+## AI assistance
+
+- **OpenAI Codex:** used for product planning, research, drafting, implementation, code explanations, test development, documentation and submission preparation. Outputs were checked with source inspection, automated tests and PDF rendering; this does not establish real market acceptance or measured climate outcomes.
+- **OpenAI Responses API / OpenAI SDK:** a server-side structured match-explanation adapter is implemented, with `gpt-4.1-mini` as the configurable default. There is no live API key configured at preparation time; the local demonstration uses an explicitly labelled deterministic rules explanation. Mocked or disabled credentials were used for automated tests, with no API credit spent. AI has no authority to change eligibility, prices, bookings or emissions records.
+
+## Application and development tools
+
+| Tool                                  | Use and current status                                                                                              |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Next.js, React, TypeScript, Node.js   | Application, API routes, UI and runtime.                                                                            |
+| Tailwind CSS                          | Styling and layout.                                                                                                 |
+| Zod                                   | Request and structured-output validation.                                                                           |
+| Radix Slot, CVA, clsx, tailwind-merge | Component composition and styling utilities; the button follows shadcn-style patterns.                              |
+| Recharts, Lucide                      | Recorded-data charts and interface icons.                                                                           |
+| SQLite (`node:sqlite`)                | Active local persistence and transaction-safe reservations.                                                         |
+| Supabase                              | SQL schema and organization read policies prepared; hosted Auth, database repository and Storage are not connected. |
+| Vitest, Playwright, PGlite            | Unit, browser/API and actual Postgres migration/access-policy tests in isolated local data.                         |
+| ESLint, Prettier, agent-browser       | Code checks, formatting and browser inspection.                                                                     |
+| Git and GitHub                        | Source version control and repository hosting; the app is on `codex/nile-initial-build`.                            |
+| Notion                                | Team planning and project documentation.                                                                            |
+| ReportLab, pypdf, pypdfium2           | Supporting PDF creation, text checks and page rendering.                                                            |
+
+The dependency versions are recorded in `package.json` and `package-lock.json`; package licensing remains governed by the respective maintainers. No Figma or Canva use was reported. Vercel deployment, Claude, Jev, live business discovery, payment processing and smart measurement modules are not active integrations in this build.
+
+## Reference data and research
+
+- [Climate Hack-tion event brief](https://hackjunction.app/hackathons/climate-hack-tion): priority-area framing.
+- [RMIT, 23 August 2023](https://www.rmit.edu.au/news/all-news/2023/aug/coffee-concrete): approximately 75,000 tonnes of spent coffee grounds generated in Australia annually; a contextual estimate, not material handled by Nile.
+- [COP31 Presidency announcement, UNFCCC](https://unfccc.int/news/cop31-presidency-announces-new-targets-on-global-electrification-cutting-waste-resilient-cities): original priority/target reference in the project plan. The submission PDF uses the event's priority names and does not claim the global targets have been achieved.
+- [IBISWorld October 2025 report, hosted by Restaurant & Catering Australia](https://arca.org.au/wp-content/uploads/2025/12/IBISWorld2025.pdf): dated industry business count used only for a separate outreach target scenario in the app.
+- [National Greenhouse Accounts Factors 2026](https://www.dcceew.gov.au/sites/default/files/documents/national-greenhouse-accounts-factors-2026.pdf): generic food-waste proxy factors for the opening illustrative methane scenario, not verified coffee-specific project savings.
+
+The source and boundary notes are in [climate-scenario.md](climate-scenario.md). The main submission description and PDF do not present a calculated methane figure as achieved impact.
