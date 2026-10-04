@@ -100,6 +100,11 @@ test("collector cannot book before cafe readiness and revised briefs require rea
   ).toBeDisabled();
   await page.getByLabel("Demo workspace").selectOption("cafe");
   await page.getByRole("button", { name: "Handovers", exact: true }).click();
+  const readyButton = card.getByRole("button", { name: "Mark café ready" });
+  const readinessHelp = card.getByRole("status");
+  await expect(readyButton).toBeDisabled();
+  await expect(readinessHelp).toContainText("Add a pickup contact");
+  await expect(readinessHelp).toContainText("Add pickup access instructions");
   await card
     .getByLabel("Pickup contact", { exact: true })
     .fill("Demo cafe manager");
@@ -109,7 +114,17 @@ test("collector cannot book before cafe readiness and revised briefs require rea
   await card
     .getByRole("checkbox", { name: /I have reviewed the batch weight/ })
     .check();
-  await card.getByRole("button", { name: "Mark café ready" }).click();
+  await expect(readyButton).toBeEnabled();
+  await card.getByLabel("Number of containers").fill("1.5");
+  await expect(readyButton).toBeDisabled();
+  await expect(readinessHelp).toContainText("whole number of containers");
+  await expect(readinessHelp).toContainText("Tick the preparation checkbox");
+  await card.getByLabel("Number of containers").fill("2");
+  await card
+    .getByRole("checkbox", { name: /I have reviewed the batch weight/ })
+    .check();
+  await expect(readinessHelp).toContainText("Ready to confirm");
+  await readyButton.click();
   await card.getByRole("button", { name: "Review as recipient" }).click();
   await expect(card).toContainText(
     "Side entrance, labelled chilled containers.",

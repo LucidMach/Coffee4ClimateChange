@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Check, Download, Truck } from "lucide-react";
 import {
   dateTime,
@@ -37,6 +37,7 @@ export function CollectionBrief({
   onAction: (action: TransferAction) => Promise<void>;
   previousCollection?: Transfer["collection"];
 }) {
+  const readinessHelpId = useId();
   const [contact, setContact] = useState(t.collection?.contact ?? "");
   const [access, setAccess] = useState(t.collection?.accessNote ?? "");
   const [containers, setContainers] = useState(
@@ -44,6 +45,18 @@ export function CollectionBrief({
   );
   const [checked, setChecked] = useState(false);
   const [pickup, setPickup] = useState(localTime(t.pickupAt));
+  // Keep the disabled action and its explanation in sync with API requirements.
+  const missingPreparation = [
+    contact.trim().length < 3 &&
+      "Add a pickup contact (at least 3 characters).",
+    access.trim().length < 5 &&
+      "Add pickup access instructions (at least 5 characters).",
+    (!Number.isInteger(Number(containers)) ||
+      Number(containers) < 1 ||
+      Number(containers) > 1000) &&
+      "Enter a whole number of containers between 1 and 1,000.",
+    !checked && "Tick the preparation checkbox after completing the details.",
+  ].filter((requirement): requirement is string => Boolean(requirement));
   const supplier =
     session.role === "cafe" && session.businessId === t.supplierId;
   const recipient =
@@ -120,6 +133,7 @@ export function CollectionBrief({
             <label>
               Pickup contact
               <input
+                minLength={3}
                 maxLength={120}
                 value={contact}
                 onChange={(e) => {
@@ -147,6 +161,7 @@ export function CollectionBrief({
           <label>
             Pickup access instructions
             <textarea
+              minLength={5}
               maxLength={300}
               value={access}
               onChange={(e) => {
@@ -167,16 +182,37 @@ export function CollectionBrief({
                 I have reviewed the batch weight, condition and preparation
                 requirements above.
               </label>
+              <p className="fine-print">
+                Changing collection details unticks this checkbox. Review and
+                tick it again before saving.
+              </p>
+              <div
+                id={readinessHelpId}
+                className="collection-readiness-help"
+                role="status"
+                aria-live="polite"
+              >
+                {busy ? (
+                  <p>Saving collection brief…</p>
+                ) : missingPreparation.length ? (
+                  <>
+                    <p>To enable this button:</p>
+                    <ul>
+                      {missingPreparation.map((requirement) => (
+                        <li key={requirement}>{requirement}</li>
+                      ))}
+                    </ul>
+                  </>
+                ) : (
+                  <p>
+                    Ready to confirm. The recipient reviews your pickup brief
+                    next.
+                  </p>
+                )}
+              </div>
               <Button
-                disabled={
-                  busy ||
-                  !checked ||
-                  contact.trim().length < 3 ||
-                  access.trim().length < 5 ||
-                  !Number.isInteger(Number(containers)) ||
-                  Number(containers) < 1 ||
-                  Number(containers) > 1000
-                }
+                disabled={busy || missingPreparation.length > 0}
+                aria-describedby={readinessHelpId}
                 onClick={() =>
                   onAction({
                     action: "prepare_collection",

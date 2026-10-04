@@ -133,6 +133,19 @@
 .collection-brief textarea {
   min-height: 70px;
 }
+.collection-readiness-help {
+  margin: 12px 0;
+  padding: 12px 14px;
+  border-left: 3px solid #30694f;
+  background: #e9efdf;
+  color: #394c3e;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.collection-readiness-help ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
 .collection-footer {
   display: flex;
   flex-wrap: wrap;
