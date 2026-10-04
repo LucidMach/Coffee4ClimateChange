@@ -109,9 +109,11 @@ function Latte() {
  */
 export function CoffeeStory({
   onEnter,
+  onViewImpact,
   metrics,
 }: {
   onEnter: () => void;
+  onViewImpact: () => void;
   metrics: ReactNode;
 }) {
   const [motion, setMotion] = useState({ cycle: 0, descent: 0 });
@@ -316,7 +318,23 @@ export function CoffeeStory({
           </a>
         </div>
         <div className="orbit-introduction">
-          <p className="story-kicker">ZERO WASTE & METHANE REDUCTION</p>
+          <nav className="story-priorities" aria-label="COP31 priorities">
+            {[
+              "Zero Waste & Methane Reduction",
+              "Green Industrialisation",
+              "Awareness",
+            ].map((priority) => (
+              <button
+                key={priority}
+                type="button"
+                className="story-kicker"
+                onClick={onViewImpact}
+                title="View Network impact"
+              >
+                {priority} <ArrowUpRight size={11} aria-hidden="true" />
+              </button>
+            ))}
+          </nav>
           <h1 id="story-title">
             Less coffee waste. <em>Less methane.</em>
           </h1>

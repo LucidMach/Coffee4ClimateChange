@@ -426,6 +426,7 @@ export function NileApp({ initial }: { initial: Bootstrap }) {
       </header>
       <main className="experience-main">
         <CoffeeStory
+          onViewImpact={() => navigate("impact")}
           onEnter={() =>
             document.getElementById("engine")?.scrollIntoView({
               behavior: window.matchMedia("(prefers-reduced-motion: reduce)")
