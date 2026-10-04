@@ -17,6 +17,8 @@ const ease = (n: number) => {
 };
 const PHASES = ["Coffee bean", "Latte", "Spent grounds"];
 const DURATION = 16000;
+// Uniform SVG scaling preserves artwork proportions. The falling-particle
+// geometry uses this same scale so grounds begin at the visible pile's position.
 const OBJECT_SCALE = 1.06;
 const CRUMBS = Array.from({ length: 72 }, (_, i) => ({
   x: Number((Math.cos(i * 2.399) * (10 + (i % 11) * 6)).toFixed(3)),
@@ -99,6 +101,12 @@ function Latte() {
   );
 }
 
+/**
+ * Two independent progress values drive the journey: a repeating coffee cycle
+ * at the top and reversible scroll descent toward the workspace circles.
+ * Scrolling freezes the cycle, blends it into grounds and carries them downward.
+ * Reduced-motion preferences disable both automatic and scroll-driven movement.
+ */
 export function CoffeeStory({
   onEnter,
   metrics,
@@ -145,6 +153,8 @@ export function CoffeeStory({
         document.querySelectorAll<HTMLElement>(".stage-node .node-icon"),
       ).map((node) => {
         const target = node.getBoundingClientRect();
+        // Reconstruct targets relative to the engine before the dock sticks.
+        // Mixing sticky viewport coordinates with SVG coordinates makes particles drift.
         return {
           x: target.left - box.left + target.width / 2,
           y:
@@ -222,12 +232,15 @@ export function CoffeeStory({
       const delta = previous ? Math.min(time - previous, 64) : 0;
       previous = time;
       const target = scrollTarget.current;
+      // Smooth descent by elapsed time, not frame count, so scrolling feels
+      // consistent at different refresh rates and can reverse without jumping.
       const nextDescent =
         current.current.descent +
         (target - current.current.descent) * (1 - Math.exp(-delta / 65));
       const descent =
         Math.abs(target - nextDescent) < 0.0001 ? target : nextDescent;
       const cycle =
+        // Phase thresholds use [0, 0.75); traverse that range once per DURATION.
         target === 0 && descent === 0
           ? (current.current.cycle + (delta / DURATION) * 0.75) % 0.75
           : current.current.cycle;

@@ -5,6 +5,10 @@ import { RECIPIENTS } from "./fixtures";
 import { sessionSchema, type Session } from "./domain";
 import { DomainError } from "./store";
 
+/**
+ * Select a fictional workspace from the demo cookie; this is not account auth.
+ * Real organizations require authenticated sessions and scoped database access.
+ */
 export async function getSession(): Promise<Session> {
   const value = (await cookies()).get("nile-demo-session")?.value;
   try {
@@ -22,6 +26,7 @@ export function validSession(s: Session) {
       )
     : s.businessId === "c-demo";
 }
+/** Enforce local JSON writes and same-origin browser requests for this demo. */
 export function guardMutation(request: Request) {
   const url = new URL(request.url);
   // Next may normalise request.url to localhost while the browser uses 127.0.0.1.

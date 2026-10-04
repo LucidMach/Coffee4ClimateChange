@@ -43,6 +43,13 @@ export function ruleExplanation(listing: Listing, match: Match): Explanation {
     ],
   };
 }
+/**
+ * Server-only explanation of a match already calculated by the rules engine.
+ * No model tools mutate eligibility, quotes, reservations or impact records.
+ * `claim` persists one request against the daily cap before the API attempt;
+ * failures still consume that allowance, while missing credentials use no call.
+ * Quota errors surface to the route; provider/parse failures return labelled rules.
+ */
 export async function explainMatch(
   listing: Listing,
   match: Match,

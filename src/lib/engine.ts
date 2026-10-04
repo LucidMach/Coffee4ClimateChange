@@ -7,6 +7,7 @@ import type {
   Transfer,
 } from "./domain";
 
+/** Straight-line kilometres for comparison; not a road route or collection ETA. */
 export function haversineKm(
   a: { lat: number; lng: number },
   b: { lat: number; lng: number },
@@ -21,6 +22,11 @@ export function haversineKm(
     Math.round(6371 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h)) * 10) / 10
   );
 }
+/**
+ * Net AUD = sale revenue + documented avoidable disposal cost - extra costs.
+ * Handling and the recipient's service fee apply per handover, not per kg.
+ * Unknown inputs propagate as null; a calculated benefit is not payment proof.
+ */
 export function netValue(
   listing: Listing,
   recipient: Pick<Recipient, "pricePerKg" | "serviceFeeAud" | "collects">,
@@ -52,6 +58,12 @@ export function netValue(
     netBenefitAud: net,
   };
 }
+/**
+ * Check material, timing, condition, quantity and storage before ranking options.
+ * Prospects remain unbookable even with attractive prices or short distances.
+ * `now` can be the proposed pickup time when the store revalidates a booking.
+ * Scores are deterministic preferences, not AI confidence or safety approval.
+ */
 export function matchListing(
   listing: Listing,
   recipients: Recipient[],
@@ -220,6 +232,12 @@ export function compatiblePools(
   }
   return groups;
 }
+/**
+ * Count only supplier-confirmed receipts in completed totals, using accepted kg.
+ * Recipient-reported use is a separate self-report and must not be inferred from
+ * transfer alone. Pending/disputed quantities stay reserved; no climate factor
+ * from the national illustration is applied to these business records.
+ */
 export function calculateMetrics(
   listings: Listing[],
   transfers: Transfer[],

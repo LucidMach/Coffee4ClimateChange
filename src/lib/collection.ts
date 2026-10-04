@@ -5,6 +5,7 @@ import {
   type Transfer,
 } from "./domain";
 
+/** Recipient-specific preparation instructions, not independent safety certification. */
 export function collectionRequirements(listing: Listing, recipient: Recipient) {
   return [
     "Keep this batch separate from other waste; review its weight and condition.",
@@ -23,6 +24,7 @@ export function collectionRequirements(listing: Listing, recipient: Recipient) {
   ];
 }
 
+/** Export the current shared brief and self-reported attestations; does not dispatch a pickup. */
 export function collectionManifest(t: Transfer, l: Listing, r: Recipient) {
   return [
     "NILE COLLECTION BRIEF — LOCAL DEMO",

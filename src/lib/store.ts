@@ -20,6 +20,11 @@ export class DomainError extends Error {
     super(message);
   }
 }
+/**
+ * Local SQLite repository for the demo. Transfer JSON retains historical terms
+ * and collection attestations; legacy receipts are read without invented data.
+ * Cloud operation requires replacing this repository and demo role switching.
+ */
 export class NileStore {
   readonly db: DatabaseSync;
   constructor(path: string, seed = true) {
@@ -43,6 +48,8 @@ export class NileStore {
     this.db.close();
   }
   transaction<T>(fn: () => T): T {
+    // Acquire the write lock before checking stock/capacity so two reservations
+    // cannot both consume the same available quantity. Any thrown error rolls back.
     this.db.exec("BEGIN IMMEDIATE");
     try {
       const result = fn();
@@ -115,6 +122,7 @@ export class NileStore {
       .run(l.id, JSON.stringify(l));
     return l;
   }
+  /** Supplier-owned reservation; eligibility and remaining capacity are rechecked atomically. */
   reserve(
     listingId: string,
     recipientId: string,
@@ -192,6 +200,12 @@ export class NileStore {
       return t;
     });
   }
+  /**
+   * Apply participant-owned transitions after route-level Zod validation.
+   * Supplier prepares -> recipient books -> recipient receives -> supplier
+   * confirms/disputes; reported use is recorded only after a completed receipt.
+   * Every transition is transactional, including collection revision checks.
+   */
   act(id: string, action: TransferAction, session: Session): Transfer {
     return this.transaction(() => {
       const t = this.transfers().find((t) => t.id === id);
@@ -210,6 +224,8 @@ export class NileStore {
       };
       switch (action.action) {
         case "prepare_collection": {
+          // Optimistic revision checks reject an outdated browser's update.
+          // New details clear recipient approval even when already booked.
           if (!supplier || !["proposed", "booked"].includes(t.status))
             fail("The supplier can prepare a proposed or booked collection.");
           if (action.revision !== (t.collection?.revision ?? 0))
@@ -265,6 +281,8 @@ export class NileStore {
           break;
         }
         case "receive":
+          // Booking alone is insufficient after a revised collection brief.
+          // Accepted weight is the receipt quantity, not the original agreement.
           if (!recipient || t.status !== "booked")
             fail(
               "The recipient must accept the pickup before recording receipt.",

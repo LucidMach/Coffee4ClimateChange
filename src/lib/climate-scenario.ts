@@ -15,6 +15,14 @@ export const AUSTRALIA_CLIMATE = {
     "https://www.dcceew.gov.au/sites/default/files/documents/national-greenhouse-accounts-factors-2026.pdf",
 } as const;
 
+/**
+ * Educational landfill-to-compost comparison for an annual grounds cohort.
+ * Uses generic food-waste proxies; methaneTonnes is lifetime tonnes of CH4,
+ * not annual emissions avoided or tonnes of CO2e. Negative results are retained.
+ * `tonnes` powers the headline display; `groundsKg` is the equivalent kg value.
+ * Cafe outreach is an independent goal, never proof that this mass is diverted.
+ * See docs/climate-scenario.md for source dates, arithmetic and exclusions.
+ */
 export function australiaPotential(
   sharePercent: number,
   gasCapturePercent = 0,

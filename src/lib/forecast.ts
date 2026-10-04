@@ -17,16 +17,26 @@ export type PurchaseInputs = {
   budgetAud: number;
 };
 const DAY = 86400000;
+/** Use the browser's calendar date when deciding which daily totals are complete. */
 export function dateKey(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 function dayNumber(date: string) {
+  // UTC is only a calendar arithmetic convention here. It avoids 23/25-hour
+  // daylight-saving days shifting the historical weekday or forecast date.
   return Date.parse(`${date}T00:00:00Z`) / DAY;
 }
 function fromDay(day: number) {
   return new Date(day * DAY).toISOString().slice(0, 10);
 }
 
+/**
+ * Parse aggregate daily bean weights or drink counts, never customer records.
+ * Requires at least 14 consecutive completed days; missing totals are errors,
+ * while explicit zero totals represent closed days. Returns the latest 28 days.
+ * This deliberately supports a simple two-column CSV, not arbitrary POS exports.
+ * The purchase planner calls this in browser memory without uploading the file.
+ */
 export function parseUsageCsv(
   text: string,
   today = dateKey(new Date()),
@@ -97,6 +107,13 @@ export function parseUsageCsv(
   return { kind, days: days.slice(-28) };
 }
 
+/**
+ * Estimate tomorrow's onward usage from historical means for each weekday.
+ * Pass history returned by parseUsageCsv; its coverage gives each weekday at
+ * least two observations. Growth is the user's assumption, not a learned trend.
+ * Quantities are kg, prices AUD/kg and monetary results AUD. Cost differences
+ * compare plans only: they never establish actual savings or climate impact.
+ */
 export function forecastPurchase(
   history: UsageHistory,
   input: PurchaseInputs,
@@ -127,6 +144,8 @@ export function forecastPurchase(
       "Review the planning inputs: quantities and budget cannot be negative; pack size and price must be positive.",
     );
   const scale =
+    // Measured bean usage already includes dial-in/wastage. Add an allowance
+    // only when converting drink counts with the cafe's entered average dose.
     history.kind === "coffee_drinks"
       ? (input.gramsPerDrink / 1000) * (1 + input.wastePct / 100)
       : 1;
@@ -149,6 +168,9 @@ export function forecastPurchase(
     0,
     expectedKg + bufferKg - input.currentStockKg - input.incomingKg,
   );
+  // Round to whole packs without ordering an extra pack for floating-point
+  // noise at an exact boundary. Stock must be usable at the start of the plan;
+  // incoming beans must be confirmed and available before that period begins.
   const orderKg =
     Math.max(0, Math.ceil((requiredKg - 1e-9) / input.packKg)) * input.packKg;
   const costAud = orderKg * input.costPerKg;
@@ -166,6 +188,7 @@ export function forecastPurchase(
   };
 }
 
+/** Fictional example with Sunday closures; never evidence of a cafe's usage. */
 export function sampleUsageCsv(today = dateKey(new Date())) {
   const start = dayNumber(today) - 28;
   return [
